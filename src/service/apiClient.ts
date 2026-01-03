@@ -1,0 +1,46 @@
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+
+// Create axios instance with default config
+const apiClient: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // Important: Send cookies with requests
+});
+
+// Request interceptor - No need to manually add token (cookies are sent automatically)
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - Handle common errors
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Handle 401 Unauthorized - redirect to login
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    }
+
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
