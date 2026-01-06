@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     // Return user without password
     const userResponse = {
       _id: user._id.toString(),
+      token: token,
       username: user.username,
       email: user.email,
       createdAt: user.createdAt,
