@@ -4,24 +4,17 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { authService } from '@/service';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
+  const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const user = authService.getStoredUser();
-    if (user) {
-      setIsAuthenticated(true);
-      setUsername(user.username);
-    }
-  }, []);
 
   const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
+    logout();
+    router.push('/');
   };
 
   return (
@@ -40,14 +33,14 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/destinations" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
-              Destinations
+            <Link href="/about" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
+              About
             </Link>
-            <Link href="/trips" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
+            <Link href="/dashboard" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
               My Trips
             </Link>
-            <Link href="/explore" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
-              Explore
+            <Link href="/contact" className="text-slate-600 hover:text-primary-600 font-medium transition-colors">
+              Contact
             </Link>
           </div>
 
@@ -55,7 +48,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-slate-600">Hi, {username}</span>
+                <span className="text-slate-600">Hi, {user?.username}</span>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 rounded-lg text-primary-600 border border-primary-600 hover:bg-primary-50 transition-colors font-medium"
@@ -100,18 +93,18 @@ export default function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-3">
-              <Link href="/destinations" className="text-slate-600 hover:text-primary-600 font-medium py-2">
-                Destinations
+              <Link href="/about" className="text-slate-600 hover:text-primary-600 font-medium py-2">
+                About
               </Link>
-              <Link href="/trips" className="text-slate-600 hover:text-primary-600 font-medium py-2">
+              <Link href="/dashboard" className="text-slate-600 hover:text-primary-600 font-medium py-2">
                 My Trips
               </Link>
-              <Link href="/explore" className="text-slate-600 hover:text-primary-600 font-medium py-2">
-                Explore
+              <Link href="/contact" className="text-slate-600 hover:text-primary-600 font-medium py-2">
+                Contact
               </Link>
               {isAuthenticated ? (
                 <>
-                  <span className="text-slate-600 py-2">Hi, {username}</span>
+                  <span className="text-slate-600 py-2">Hi, {user?.username}</span>
                   <button
                     onClick={handleLogout}
                     className="text-left text-primary-600 font-medium py-2"
