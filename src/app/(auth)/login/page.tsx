@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/service';
+import { useAuth } from '@/context/AuthContext'; // Adjust the import based on your project structure
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -31,7 +33,8 @@ export default function LoginPage() {
       const data = await authService.login(formData);
 
       if (data.success) {
-        router.push('/');
+        login(data.user); // Pass the user data from API response
+        router.push('/dashboard');
       } else {
         setError(data.message || 'Login failed');
       }

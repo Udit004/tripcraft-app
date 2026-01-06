@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/service';
+import { useAuth } from '@/context/AuthContext'; 
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -49,7 +51,8 @@ export default function SignUpPage() {
       });
 
       if (data.success) {
-        router.push('/');
+        login(data.user); // Assuming the user data is returned in data.user
+        router.push('/dashboard');
       } else {
         setError(data.message || 'Signup failed');
       }

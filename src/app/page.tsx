@@ -1,12 +1,9 @@
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
+    <div className="min-h-screen flex flex-col"> 
       {/* Hero Section */}
       <section className="gradient-hero text-white py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -108,8 +105,7 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      <Footer />
+      <Footer/>
     </div>
   );
 }
