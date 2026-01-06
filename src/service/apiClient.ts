@@ -10,7 +10,7 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: true, // Important: Send cookies with requests
 });
 
-// Request interceptor - No need to manually add token (cookies are sent automatically)
+// Request interceptor - Cookies are sent automatically with withCredentials: true
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     return config;

@@ -1,6 +1,5 @@
 import apiClient from './apiClient';
 import { ILoginRequest, ISignupRequest, IAuthResponse, IUserResponse } from '@/types/user';
-import Cookies from 'js-cookie';
 
 /**
  * Auth Service - Handles all authentication related API calls
@@ -14,7 +13,7 @@ export const authService = {
     try {
       const response = await apiClient.post<IAuthResponse>('/auth/login', credentials);
       
-      // Store user data in localStorage (not sensitive)
+      // Store user data (including token) in localStorage
       if (response.data.success && response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
