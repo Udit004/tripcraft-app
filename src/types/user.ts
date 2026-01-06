@@ -1,5 +1,7 @@
+import mongoose from "mongoose";
+
 export interface IUser {
-  _id?: string;
+  _id?: mongoose.Types.ObjectId | string;
   username: string;
   email: string;
   password: string;
@@ -8,7 +10,7 @@ export interface IUser {
 }
 
 export interface IUserResponse {
-  _id: string;
+  _id: mongoose.Types.ObjectId | string;
   username: string;
   email: string;
   createdAt: Date;

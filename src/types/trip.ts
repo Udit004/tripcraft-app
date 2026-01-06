@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
+
 export interface ITrip {
-    _id?: string;
-    userId?: string;
+    _id?: mongoose.Types.ObjectId | string;
+    userId?: mongoose.Types.ObjectId | string;
     tripName: string;
     tripDescription: string;
     destination: string;
@@ -12,8 +14,8 @@ export interface ITrip {
 
 
 export interface ITripResponse {
-    _id: string;
-    userId?: string;
+    _id: mongoose.Types.ObjectId | string;
+    userId?: mongoose.Types.ObjectId | string;
     tripName: string;
     tripDescription: string;
     destination: string;
