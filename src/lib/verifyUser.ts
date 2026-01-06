@@ -22,10 +22,8 @@ export async function checkAuthentication(request: NextRequest): Promise<{
       if (authHeader) {
         // Extract token from "Bearer <token>"
         const parts = authHeader.split(' ');
-        console.log('Auth header parts:', parts);
         if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
           token = parts[1];
-          console.log('Token extracted from header. Token length:', token.length);
         }
       }
     }
