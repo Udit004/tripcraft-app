@@ -1,7 +1,8 @@
 "use client"
 import ProtectRoutes from '@/components/ProtectRoutes'
 import React, { useEffect, useState } from 'react'
-import { getTrips } from '@/service/tripService'
+import { useRouter } from 'next/navigation'
+import { getTrips } from '@/services/tripService'
 import { ITripResponse } from '@/types/trip'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { MapPin, Calendar, FileText } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Dashboard() {
+  const router = useRouter();
   const [trips, setTrips] = useState<ITripResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +49,12 @@ export default function Dashboard() {
     const diffTime = Math.abs(end.getTime() - start.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
+  }
+
+  const handleTripRedirection = (tripId: string | undefined) => {
+    if(tripId){
+      router.push(`/dashboard/${tripId}`)
+    }
   }
 
   return (
@@ -102,7 +110,7 @@ export default function Dashboard() {
           {!loading && trips.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {trips.map((trip) => (
-                <Card key={trip._id} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <Card key={trip._id} onClick={() => handleTripRedirection(trip._id)} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer">
                   {/* Card Header with Destination */}
                   <div className="bg-gradient-to-r from-indigo-500 to-blue-500 p-4 text-white">
                     <h2 className="text-xl font-bold truncate">{trip.tripName}</h2>

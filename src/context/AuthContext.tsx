@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authService } from '@/service';
+import { authService } from '@/services';
 
 interface AuthContextType {
   isAuthenticated: boolean;

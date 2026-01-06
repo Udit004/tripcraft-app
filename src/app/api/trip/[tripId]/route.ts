@@ -6,7 +6,7 @@ import { checkAuthentication } from '@/lib/verifyUser';
 
 
 
-export async function GET(req: NextRequest, { params }: { params: { tripId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if(!isAuthenticated){
         return NextResponse.json(
@@ -19,7 +19,12 @@ export async function GET(req: NextRequest, { params }: { params: { tripId: stri
     }
     try {
         await connectDB();
-        const { tripId } = await params;
+        const resolvedParams = await params;
+        const tripId = resolvedParams.tripId;
+        
+        console.log('Resolved params:', resolvedParams);
+        console.log('Received tripId:', tripId);
+        
         const trip = await Trip.findById(tripId);
 
         if (!trip) {

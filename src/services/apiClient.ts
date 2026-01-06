@@ -1,8 +1,18 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
+// Determine the base URL based on environment
+const getBaseURL = () => {
+  // Server-side: use full URL
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  }
+  // Client-side: can use relative URL
+  return process.env.NEXT_PUBLIC_API_URL || '/api';
+};
+
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
