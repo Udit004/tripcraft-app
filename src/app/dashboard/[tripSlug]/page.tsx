@@ -5,6 +5,7 @@ import { getTripById } from "@/services/tripService";
 import { use, useEffect, useState } from "react";
 import { ITripResponse } from "@/types/trip";
 import TripHeader from "@/components/dashboard/tripSlug/TripHeader";
+import TripItinerary from "@/components/dashboard/tripSlug/TripItinerary";
 
 
 export default function TripPage({ params }: { params: Promise<{ tripSlug: string }> }) {
@@ -44,6 +45,9 @@ export default function TripPage({ params }: { params: Promise<{ tripSlug: strin
   return (
     <div className="container mx-auto p-6">
       <TripHeader trip={trip} />
+        <div className="mt-6">
+            <TripItinerary tripSlug={tripSlug} />
+        </div>
     </div>
   );
 }
