@@ -6,6 +6,7 @@ import { IItineraryDayResponse } from '@/types/itineraryDay'
 import { getItineraryDays } from '@/services'
 import { Calendar, MapPin, Clock, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
+import CreateItinerayDayModal from './CreateItinerayDayModal'
 
 // Separate presentational component for better maintainability
 const ItineraryDayCard = ({ day, index, onClick }: { day: IItineraryDayResponse; index: number; onClick?: (day: IItineraryDayResponse) => void }) => {
@@ -122,6 +123,7 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
   const [itineraryData, setItineraryData] = useState<IItineraryDayResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [openModal, setOpenModal] = useState(false)
 
   const fetchItineraryDays = async () => {
     try {
@@ -157,11 +159,19 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
       {/* Section header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-[#0F172A] mb-2">Trip Itinerary</h2>
-        <p className="text-[#475569]">
-          Your day-by-day travel plan
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-[#0F172A] mb-2">Trip Itinerary</h2>
+          <p className="text-[#475569]">
+            Your day-by-day travel plan
+          </p>
+        </div>
+        <button
+          onClick={() => setOpenModal(true)}
+          className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer"
+        >
+          + Add Day
+        </button>
       </div>
 
       {/* Content */}
@@ -180,6 +190,30 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
           {itineraryData.map((day, index) => (
             <ItineraryDayCard key={day._id} day={day} index={index} onClick={handleDayClick} />
           ))}
+        </div>
+      )}
+
+      {/* Create Itinerary Day Modal */}
+      {openModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
+          <div className="relative max-w-xl w-full mx-4 my-8">
+            <CreateItinerayDayModal
+              tripId={tripSlug}
+              onClose={() => setOpenModal(false)}
+              onSuccess={() => {
+                setOpenModal(false)
+                fetchItineraryDays()
+              }}
+            />
+            <button
+              onClick={() => setOpenModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </div>
