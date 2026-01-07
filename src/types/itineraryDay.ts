@@ -36,8 +36,8 @@ export interface IItineraryDayResponse {
 export interface IItineraryDayApiResponse {
     success: boolean;
     message: string;
-    itineraryDay?: IItineraryDayResponse;
-    itineraryDays?: IItineraryDayResponse[];
+    itinerary?: IItineraryDayResponse;
+    itineraries?: IItineraryDayResponse[];
     activities?: IActivity[];
     error?: string;
 }
