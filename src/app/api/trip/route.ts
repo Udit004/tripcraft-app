@@ -5,7 +5,7 @@ import { ICreateTripRequest, ITripResponse, ITripApiResponse, ITrip } from '@/ty
 import { checkAuthentication } from '@/lib/verifyUser';
 
 
-
+// Create a new trip
 export async function POST(req: NextRequest) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 }
 
 
-
+// Get all trips for the authenticated user
 export async function GET(req: NextRequest) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
 

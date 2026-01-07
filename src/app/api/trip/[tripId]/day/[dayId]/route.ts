@@ -8,6 +8,8 @@ import { checkAuthentication } from '@/lib/verifyUser';
 import mongoose from 'mongoose';
 
 
+
+// Get a specific itinerary day by ID with its activities
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
@@ -84,7 +86,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
             {
                 success: true,
                 message: 'Itinerary Day fetched successfully',
-                itineraryDay: itineraryDayResponse,
+                itineraries: [itineraryDayResponse],
                 activities: activitiesResponse,
             } as IItineraryDayApiResponse,
             { status: 200 }

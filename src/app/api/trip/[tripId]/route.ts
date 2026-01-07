@@ -5,7 +5,7 @@ import { ICreateTripRequest, ITripResponse, ITripApiResponse, ITrip } from '@/ty
 import { checkAuthentication } from '@/lib/verifyUser';
 
 
-
+// Get a specific trip by ID
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if(!isAuthenticated){

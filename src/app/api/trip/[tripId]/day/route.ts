@@ -5,6 +5,9 @@ import ItineraryDayModel from '@/models/ItineraryDay';
 import { IItineraryDay, IItineraryDayApiResponse } from '@/types/itineraryDay';
 import { checkAuthentication } from '@/lib/verifyUser';
 
+
+
+// Add a new itinerary day to a specific trip
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);    
     if(!isAuthenticated){   
@@ -75,6 +78,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tri
 
 
 
+
+// Get all itinerary days for a specific trip
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);    
     if(!isAuthenticated){
