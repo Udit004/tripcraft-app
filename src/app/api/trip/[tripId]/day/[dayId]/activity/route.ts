@@ -5,7 +5,7 @@ import { IActivityApiResponse, ICreateActivityRequest, IActivityResponse } from 
 import { checkAuthentication } from "@/lib/verifyUser";
 import ItineraryDayModel from "@/models/ItineraryDay";
 
-
+// Create a new activity for a specific itinerary day
 export async function POST(req: Request, { params }: { params: { tripId: string; dayId: string } }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
@@ -87,7 +87,7 @@ export async function POST(req: Request, { params }: { params: { tripId: string;
 };
 
 
-
+// Get all activities for a specific itinerary day
 export async function GET(req: Request, { params }: { params: { tripId: string; dayId: string } }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
