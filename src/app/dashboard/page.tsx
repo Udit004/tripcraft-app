@@ -8,14 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { MapPin, Calendar, FileText } from 'lucide-react'
 import Link from 'next/link'
+import CreateTripModal from '@/components/dashboard/CreateTripModal'
 
 export default function Dashboard() {
   const router = useRouter();
   const [trips, setTrips] = useState<ITripResponse[]>([])
+  const [openModal, setOpenModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const tripDataFetch = async() => {
+  const tripDataFetch = async () => {
     try {
       setLoading(true)
       const fetchedTrips = await getTrips()
@@ -52,7 +54,7 @@ export default function Dashboard() {
   }
 
   const handleTripRedirection = (tripId: string | undefined) => {
-    if(tripId){
+    if (tripId) {
       router.push(`/dashboard/${tripId}`)
     }
   }
@@ -67,11 +69,10 @@ export default function Dashboard() {
               <h1 className="text-4xl font-bold text-gray-900 mb-2">My Trips</h1>
               <p className="text-gray-600">Plan and manage your adventures</p>
             </div>
-            <Link href="/plan">
-              <Button className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer">
-                + New Trip
-              </Button>
-            </Link>
+            <Button onClick={() => setOpenModal(true)} className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer">
+              + New Trip
+            </Button>
+
           </div>
 
           {/* Error State */}
@@ -173,6 +174,23 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* Create Trip Modal */}
+        {openModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
+            <div className="relative max-w-xl w-full mx-4 my-8 top-28">
+              <CreateTripModal />
+              <button
+                onClick={() => setOpenModal(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </ProtectRoutes>
   )
