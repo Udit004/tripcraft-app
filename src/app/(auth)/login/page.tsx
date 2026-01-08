@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services';
 import { useAuth } from '@/context/AuthContext'; // Adjust the import based on your project structure
+import { toast } from '@/lib/toast';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,12 +35,17 @@ export default function LoginPage() {
 
       if (data.success) {
         login(data.user); // Pass the user data from API response
+        toast.success('Login successful! Redirecting...');
         router.push('/dashboard');
       } else {
-        setError(data.message || 'Login failed');
+        const errorMsg = data.message || 'Login failed';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMsg = 'An error occurred. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

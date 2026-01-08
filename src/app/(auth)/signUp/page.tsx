@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services';
 import { useAuth } from '@/context/AuthContext'; 
+import { toast } from '@/lib/toast'; 
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -32,13 +33,17 @@ export default function SignUpPage() {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      const errorMsg = 'Passwords do not match';
+      setError(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      const errorMsg = 'Password must be at least 6 characters';
+      setError(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
       return;
     }
@@ -52,12 +57,17 @@ export default function SignUpPage() {
 
       if (data.success) {
         login(data.user); // Assuming the user data is returned in data.user
+        toast.success('Account created successfully! Redirecting...');
         router.push('/dashboard');
       } else {
-        setError(data.message || 'Signup failed');
+        const errorMsg = data.message || 'Signup failed';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMsg = 'An error occurred. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
