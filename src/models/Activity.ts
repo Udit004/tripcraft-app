@@ -18,20 +18,19 @@ const ActivitySchema = new Schema<IActivity>(
     },
     description: {
       type: String,
-      required: true,
+      required: false,
     },
     location: {
       type: String,
-      required: true,
+      required: false,
     },
     startTime: {
       type: String,
-
-      required: true,
+      required: false,
     },
     endTime: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }

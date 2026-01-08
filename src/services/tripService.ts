@@ -43,6 +43,33 @@ export const getTripById = async (tripId: string): Promise<ITripResponse | null>
     }
 }
 
+export const updateTrip = async (tripId: string, tripData: ICreateTripRequest): Promise<ITripResponse | null> => {
+    try {
+        const response = await apiClient.put<ITripApiResponse>(`/trip/${tripId}`, tripData);
+        if (response.data.success && response.data.trip) {
+            return response.data.trip;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error updating trip:', error);
+        throw error;
+    }
+}
+
+// delete trip
+export const deleteTrip = async (tripId: string): Promise<boolean> => {
+    try {
+        const response = await apiClient.delete<ITripApiResponse>(`/trip/${tripId}`);
+        if (response.data.success) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error deleting trip:', error);
+        throw error;
+    }
+}   
+
 
 // Itinerary Day Services
 export const CreateItineraryDay = async (dayData: IItineraryDayRequest): Promise<IItineraryDayResponse> => {
@@ -94,6 +121,34 @@ export const getItineraryDayById = async (tripId: string, dayId: string): Promis
     }
 };
 
+export const updateItineraryDay = async (tripId: string, dayId: string, dayData: Omit<IItineraryDayRequest, 'tripId'>): Promise<IItineraryDayResponse> => {
+    try {
+        const response = await apiClient.put<IItineraryDayApiResponse>(`/trip/${tripId}/day/${dayId}`, dayData);
+        
+        const itinerary = response.data.itinerary || response.data.itineraries?.[0];
+        
+        if (response.data.success && itinerary) {
+            return itinerary as IItineraryDayResponse;
+        }
+        
+        throw new Error(response.data.error || 'Failed to update itinerary day');
+    } catch (error) {
+        console.error('Error updating itinerary day:', error);
+        throw error;
+    }
+}
+
+export const deleteItineraryDay = async (tripId: string, dayId: string): Promise<boolean> => {
+    try {
+        const response = await apiClient.delete<IItineraryDayApiResponse>(`/trip/${tripId}/day/${dayId}`);
+        return response.data.success;
+    } catch (error) {
+        console.error('Error deleting itinerary day:', error);
+        throw error;
+    }
+}
+    
+
 
 // activity services
 
@@ -129,6 +184,16 @@ export const deleteActivity = async (tripId: string, dayId: string, activityId: 
         return response.data.success;
     } catch (error) {
         console.error('Error deleting activity:', error);
+        throw error;
+    }
+}
+
+export const updateActivity = async (tripId: string, dayId: string, activityId: string, data: any): Promise<boolean> => {
+    try {
+        const response = await apiClient.put<IItineraryDayApiResponse>(`/trip/${tripId}/day/${dayId}/activity/${activityId}`, data);
+        return response.data.success;
+    } catch (error) {
+        console.error('Error updating activity:', error);
         throw error;
     }
 }
