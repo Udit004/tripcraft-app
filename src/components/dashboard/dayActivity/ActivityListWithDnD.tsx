@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { IActivity } from '@/types/activity'
 import DraggableActivityCard from './DraggableActivityCard'
 import InlineActivityForm from './InlineActivityForm'
-import { Plus, Calendar } from 'lucide-react'
+import { Plus, Calendar, AlertTriangle } from 'lucide-react'
+import { hasOrderTimeMismatch } from '@/utility/activityTimeOrder'
 
 interface ActivityListWithDnDProps {
   tripId: string
@@ -31,10 +32,16 @@ export default function ActivityListWithDnD({
   const [showForm, setShowForm] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [hasWarning, setHasWarning] = useState(false)
 
   useEffect(() => {
     setActivities(initialActivities)
   }, [initialActivities])
+
+  // Recalculate warning whenever activities change
+  useEffect(() => {
+    setHasWarning(hasOrderTimeMismatch(activities))
+  }, [activities])
 
   const handleAddActivity = async (data: any) => {
     if (onActivityAdd) {
@@ -115,6 +122,16 @@ export default function ActivityListWithDnD({
         onSubmit={handleAddActivity}
         onCancel={() => setShowForm(false)}
       />
+
+      {/* Time-Order Mismatch Warning */}
+      {hasWarning && activities.length > 1 && (
+        <div className="mb-4 flex items-center gap-3 rounded-md border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 shadow-sm">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+          <span>
+            <span className="font-semibold">Time sequence mismatch:</span> Activity order doesn&apos;t match the scheduled time sequence. Review timings to avoid confusion.
+          </span>
+        </div>
+      )}
 
       {/* Activities List */}
       {activities.length === 0 && !showForm ? (

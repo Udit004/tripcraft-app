@@ -11,7 +11,7 @@ import ActivityListWithDnD from '@/components/dashboard/dayActivity/ActivityList
 import EditItineraryDayModal from '@/components/dashboard/itineraryDay/EditItineraryDayModal';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
 import DayHeader from '@/components/dashboard/itineraryDay/DayHeader';
-import { analyzeDay } from '@/lib/dayWarnings';
+import { analyzeDay } from '@/utility/dayWarnings';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/lib/toast';

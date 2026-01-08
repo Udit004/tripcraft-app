@@ -1,5 +1,5 @@
 import React from 'react';
-import { DayWarning } from '@/lib/dayWarnings';
+import { DayWarning } from '@/utility/dayWarnings';
 import { Calendar, AlertTriangle, Info } from 'lucide-react';
 import { format } from 'date-fns';
 
