@@ -11,6 +11,8 @@ import EditTripModal from "../trip/EditTripModal";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
 import { colors } from "@/constants/colors";
 import { toast } from '@/lib/toast'
+import { toast as sonnerToast } from 'sonner'
+import UndoToast from "@/components/UndoToast";
 
 interface TripHeaderProps {
   trip: ITripResponse;
@@ -54,9 +56,44 @@ export default function TripHeader({ trip }: TripHeaderProps) {
     setError(null);
     
     try {
-      await deleteTrip(trip._id!);
-      toast.delete('Trip deleted successfully!');
-      router.push('/dashboard');
+      const result = await deleteTrip(trip._id!);
+      
+      if (result && result.success) {
+        // Close the delete dialog first
+        setShowDeleteConfirm(false);
+        setIsDeleting(false);
+        
+        // Show undo toast if deletion was successful
+        if (result.deletionLogId) {
+          sonnerToast.custom(
+            (t) => (
+              <UndoToast
+                message={`"${trip.tripName}" deleted`}
+                deletionLogId={result.deletionLogId}
+                onUndo={() => {
+                  sonnerToast.dismiss(t);
+                  // Refresh the page to show restored trip
+                  router.refresh();
+                }}
+                onExpire={() => {
+                  sonnerToast.dismiss(t);
+                  // After undo window expires, redirect to dashboard
+                  router.push('/dashboard');
+                }}
+                undoWindowSeconds={result.undoWindowSeconds}
+              />
+            ),
+            { duration: result.undoWindowSeconds * 1000 }
+          );
+        } else {
+          toast.delete('Trip deleted successfully!');
+          router.push('/dashboard');
+        }
+      } else {
+        setError('Failed to delete trip. Please try again.');
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
+      }
     } catch (err) {
       setError('Failed to delete trip. Please try again.');
       console.error('Delete trip error:', err);
@@ -245,8 +282,8 @@ export default function TripHeader({ trip }: TripHeaderProps) {
 
       {/* Edit Trip Modal */}
       {openEditModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
-          <div className="relative max-w-xl w-full mx-4 my-8 top-28">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+          <div className="relative max-w-xl w-full mx-4 mt-8">
             <EditTripModal
               tripId={trip._id!}
               initialTripData={{
