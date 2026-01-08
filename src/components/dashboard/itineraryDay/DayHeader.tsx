@@ -5,17 +5,25 @@ import { format } from 'date-fns';
 
 interface DayHeaderProps {
   dayNumber: number;
+  dayName: string;
   date: string;
   warnings: DayWarning[];
 }
 
 // warning card component
-export default function DayHeader({ dayNumber, date, warnings }: DayHeaderProps) {
+export default function DayHeader({ dayNumber, dayName, date, warnings }: DayHeaderProps) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-2">
-        Day {dayNumber}
-      </h2>
+      <div className="flex items-baseline gap-3 mb-2">
+        <h2 className="text-3xl font-bold text-gray-900">
+          Day {dayNumber}
+        </h2>
+        {dayName && (
+          <span className="text-lg font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+            {dayName}
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-4 text-gray-600 mb-4">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-indigo-600" />

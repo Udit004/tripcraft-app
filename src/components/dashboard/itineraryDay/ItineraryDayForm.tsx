@@ -66,6 +66,24 @@ export default function ItineraryDayForm({
                     <p className="text-xs text-gray-500 mt-1">Which day of the trip is this?</p>
                 </div>
 
+                {/* Day Name */}
+                <div>
+                    <label htmlFor="dayName" className="block text-sm font-semibold text-gray-900 mb-2">
+                        Day Name
+                    </label>
+                    <input
+                        type="text"
+                        id="dayName"
+                        name="dayName"
+                        value={dayDetails.dayName}
+                        onChange={onInputChange}
+                        placeholder="e.g., Arrival Day, Beach Day, Adventure Day"
+                        required
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Give this day a memorable name or theme</p>
+                </div>
+
                 {/* Date */}
                 <div>
                     <label htmlFor="date" className="block text-sm font-semibold text-gray-900 mb-2">

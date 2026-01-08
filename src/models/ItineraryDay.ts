@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IItineraryDay } from "@/types/itineraryDay";
 
 const ItineraryDaySchema = new Schema<IItineraryDay>({
@@ -10,6 +10,11 @@ const ItineraryDaySchema = new Schema<IItineraryDay>({
     dayNumber: {
         type: Number,
         required: true,
+    },
+    dayName: {
+        type: String,
+        required: true,
+        default: '',
     },
     date: {
         type: Date,     

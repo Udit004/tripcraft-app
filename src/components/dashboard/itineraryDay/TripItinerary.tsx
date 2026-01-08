@@ -52,9 +52,16 @@ const ItineraryDayCard = ({
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-[#0F172A] mb-2">
-                  Day {day.dayNumber}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold text-[#0F172A]">
+                    Day {day.dayNumber}
+                  </h3>
+                  {day.dayName && (
+                    <span className="text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                      {day.dayName}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-[#475569] text-sm">
                   <Calendar className="w-4 h-4" />
                   <span>{formattedDate}</span>

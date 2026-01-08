@@ -262,6 +262,7 @@ export default function ItineraryPage({
           </div>
           <DayHeader 
             dayNumber={itineraryData.dayNumber}
+            dayName={itineraryData.dayName}
             date={itineraryData.date.toString()}
             warnings={dayWarnings}
           />

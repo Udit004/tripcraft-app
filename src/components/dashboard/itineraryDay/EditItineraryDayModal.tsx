@@ -26,6 +26,7 @@ export default function EditItineraryDayModal({
     const [dayDetails, setDayDetails] = useState<IItineraryDayRequest>({
         tripId: tripId,
         dayNumber: initialDayData.dayNumber,
+        dayName: initialDayData.dayName,
         date: new Date(initialDayData.date),
         activitiesId: initialDayData.activitiesId || [],
     })
@@ -36,6 +37,7 @@ export default function EditItineraryDayModal({
         setDayDetails({
             tripId: tripId,
             dayNumber: initialDayData.dayNumber,
+            dayName: initialDayData.dayName,
             date: new Date(initialDayData.date),
             activitiesId: initialDayData.activitiesId || [],
         })
@@ -64,6 +66,7 @@ export default function EditItineraryDayModal({
         try {
             const updateData = {
                 dayNumber: dayDetails.dayNumber,
+                dayName: dayDetails.dayName,
                 date: dayDetails.date,
                 activitiesId: dayDetails.activitiesId,
             }

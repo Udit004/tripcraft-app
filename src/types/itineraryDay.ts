@@ -5,6 +5,7 @@ export interface IItineraryDay {
     _id?: mongoose.Types.ObjectId | string;
     tripId: mongoose.Types.ObjectId | string; 
     dayNumber: number;
+    dayName: string;
     date: Date;
     activitiesId: IActivityId[];
     createdAt: string;
@@ -18,6 +19,7 @@ export interface IItineraryDayId {
 export interface IItineraryDayRequest {
     tripId: mongoose.Types.ObjectId | string;
     dayNumber: number;
+    dayName: string;
     date: Date;
     activitiesId?: string[];
 }
@@ -26,6 +28,7 @@ export interface IItineraryDayResponse {
     _id?: mongoose.Types.ObjectId | string;
     tripId: mongoose.Types.ObjectId | string; 
     dayNumber: number;
+    dayName: string;
     date: Date;
     activitiesId: IActivityId[];
     activities?: IActivity[];

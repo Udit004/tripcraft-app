@@ -19,6 +19,7 @@ export default function CreateItineraryDayModal({ tripId, onClose, onSuccess }: 
     const [dayDetails, setDayDetails] = useState<IItineraryDayRequest>({
         tripId: tripId,
         dayNumber: 1,
+        dayName: '',
         date: new Date(),
         activitiesId: [],
     })
@@ -53,6 +54,7 @@ export default function CreateItineraryDayModal({ tripId, onClose, onSuccess }: 
             setDayDetails({
                 tripId: tripId,
                 dayNumber: 1,
+                dayName: '',
                 date: new Date(),
                 activitiesId: [],
             })

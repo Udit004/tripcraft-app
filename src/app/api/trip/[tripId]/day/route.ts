@@ -50,6 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tri
         const newItinerary = await ItineraryDayModel.create({
             tripId: trip._id,
             dayNumber: body.dayNumber,
+            dayName: body.dayName || '',
             date: body.date,
             activitiesId: body.activitiesId || [],
         });

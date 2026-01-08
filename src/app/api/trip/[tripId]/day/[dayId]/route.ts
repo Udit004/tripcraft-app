@@ -65,6 +65,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
             _id: itineraryDay._id.toString(),
             tripId: itineraryDay.tripId.toString(),
             dayNumber: itineraryDay.dayNumber,
+            dayName: itineraryDay.dayName || '',
             date: itineraryDay.date,
             activitiesId: itineraryDay.activitiesId.map((id: mongoose.Types.ObjectId) => id.toString()),
             createdAt: itineraryDay.createdAt,
@@ -160,6 +161,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ trip
             dayId,
             {
                 dayNumber: dayData.dayNumber,
+                dayName: dayData.dayName || '',
                 date: dayData.date,
                 updatedAt: new Date(),
             },
@@ -170,6 +172,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ trip
             _id: updatedItineraryDay._id.toString(),
             tripId: updatedItineraryDay.tripId.toString(),
             dayNumber: updatedItineraryDay.dayNumber,
+            dayName: updatedItineraryDay.dayName || '',
             date: updatedItineraryDay.date,
             activitiesId: updatedItineraryDay.activitiesId.map((id: mongoose.Types.ObjectId) => id.toString()),
             createdAt: updatedItineraryDay.createdAt,
