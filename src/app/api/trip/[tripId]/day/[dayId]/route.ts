@@ -6,6 +6,7 @@ import Activity from '@/models/Activity';
 import { IItineraryDay, IItineraryDayApiResponse } from '@/types/itineraryDay';
 import { checkAuthentication } from '@/lib/verifyUser';
 import mongoose from 'mongoose';
+import { logDeletion } from '@/lib/deletionLog';
 
 
 
@@ -245,6 +246,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ t
             );
         }
 
+        // Fetch all activities before deletion for undo feature
+        const activities = await Activity.find({ itineraryDayId: dayId });
+
+        // Log deletion for undo feature
+        const deletionLogId = await logDeletion({
+            userId: user._id.toString(),
+            entityType: 'itineraryDay',
+            entityId: dayId,
+            data: itineraryDay.toObject(),
+            relatedData: {
+                tripId: tripId,
+                activities: activities.map(a => a.toObject()),
+            },
+        });
+
         // Delete all activities associated with this itinerary day
         await Activity.deleteMany({ itineraryDayId: dayId });
 
@@ -262,6 +278,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ t
             {
                 success: true,
                 message: 'Itinerary Day deleted successfully',
+                deletionLogId: deletionLogId,
+                undoWindowSeconds: 10,
             } as IItineraryDayApiResponse,
             { status: 200 }
         );

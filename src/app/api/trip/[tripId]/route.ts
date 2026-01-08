@@ -3,7 +3,9 @@ import connectDB from '@/lib/mongodb';
 import { Trip } from '@/models/Trip';
 import { ICreateTripRequest, ITripResponse, ITripApiResponse, ITrip } from '@/types/trip';
 import { checkAuthentication } from '@/lib/verifyUser';
-
+import  ItineraryDay  from '@/models/ItineraryDay';
+import  Activity  from '@/models/Activity';
+import { logDeletion } from '@/lib/deletionLog';
 
 // Get a specific trip by ID
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
@@ -206,12 +208,44 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ t
                 { status: 403 }
             );
         }
+
+        // Cascade delete: First, find all itinerary days for this trip
+        const itineraryDays = await ItineraryDay.find({ tripId: tripId });
+        const allActivities = [];
+        for (const day of itineraryDays) {
+            const activities = await Activity.find({ itineraryDayId: day._id });
+            allActivities.push(...activities);
+        }
+
+        // Log deletion for undo feature
+        const deletionLogId = await logDeletion({
+            userId: user._id.toString(),
+            entityType: 'trip',
+            entityId: tripId,
+            data: trip.toObject(),
+            relatedData: {
+                itineraryDays: itineraryDays.map(d => d.toObject()),
+                activities: allActivities,
+            },
+        });
+
+        // Delete all activities associated with each itinerary day
+        for (const day of itineraryDays) {
+            await Activity.deleteMany({ itineraryDayId: day._id });
+        }
+        
+        // Delete all itinerary days for this trip
+        await ItineraryDay.deleteMany({ tripId: tripId });
+        
+        // Finally, delete the trip itself
         await Trip.findByIdAndDelete(tripId);
 
         return NextResponse.json(
             {
                 success: true,
                 message: 'Trip deleted successfully',
+                deletionLogId: deletionLogId,
+                undoWindowSeconds: 10,
             },
             { status: 200 }
         );

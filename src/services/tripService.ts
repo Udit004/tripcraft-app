@@ -57,11 +57,16 @@ export const updateTrip = async (tripId: string, tripData: ICreateTripRequest): 
 }
 
 // delete trip
-export const deleteTrip = async (tripId: string): Promise<boolean> => {
+export const deleteTrip = async (tripId: string): Promise<{ success: boolean; message: string; deletionLogId: string; undoWindowSeconds: number } | false> => {
     try {
         const response = await apiClient.delete<ITripApiResponse>(`/trip/${tripId}`);
         if (response.data.success) {
-            return true;
+            return {
+                success: response.data.success,
+                message: response.data.message,
+                deletionLogId: (response.data as any).deletionLogId,
+                undoWindowSeconds: (response.data as any).undoWindowSeconds,
+            };
         }
         return false;
     } catch (error) {
@@ -138,12 +143,27 @@ export const updateItineraryDay = async (tripId: string, dayId: string, dayData:
     }
 }
 
-export const deleteItineraryDay = async (tripId: string, dayId: string): Promise<boolean> => {
+export const deleteItineraryDay = async (tripId: string, dayId: string): Promise<{ success: boolean; deletionLogId?: string; undoWindowSeconds?: number }> => {
     try {
         const response = await apiClient.delete<IItineraryDayApiResponse>(`/trip/${tripId}/day/${dayId}`);
-        return response.data.success;
+        return {
+            success: response.data.success,
+            deletionLogId: (response.data as any).deletionLogId,
+            undoWindowSeconds: (response.data as any).undoWindowSeconds,
+        };
     } catch (error) {
         console.error('Error deleting itinerary day:', error);
+        throw error;
+    }
+}
+
+// Undo deletion
+export const undoDeletion = async (deletionLogId: string): Promise<boolean> => {
+    try {
+        const response = await apiClient.post<{ success: boolean; message: string }>('/undo', { deletionLogId });
+        return response.data.success;
+    } catch (error) {
+        console.error('Error undoing deletion:', error);
         throw error;
     }
 }
