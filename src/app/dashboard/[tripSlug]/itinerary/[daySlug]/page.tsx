@@ -10,7 +10,7 @@ import { ErrorState } from '@/components/dashboard/dayActivity/ErrorState';
 import ActivityListWithDnD from '@/components/dashboard/dayActivity/ActivityListWithDnD';
 import EditItineraryDayModal from '@/components/dashboard/itineraryDay/EditItineraryDayModal';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
-import DayHeader from '@/components/itinerary/DayHeader';
+import DayHeader from '@/components/dashboard/itineraryDay/DayHeader';
 import { analyzeDay } from '@/lib/dayWarnings';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
