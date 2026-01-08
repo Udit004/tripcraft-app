@@ -3,12 +3,14 @@
 import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IActivity } from '@/types/activity';
-import { IItineraryDay } from '@/types/itineraryDay';
-import { getItineraryDayById, addActivityToItineraryDay, deleteActivity, updateActivityOrder } from '@/services/tripService';
-import { LoadingState } from '@/components/dashboard/tripSlug/dayActivity/LoadingState';
-import { ErrorState } from '@/components/dashboard/tripSlug/dayActivity/ErrorState';
-import ActivityListWithDnD from '@/components/dashboard/tripSlug/dayActivity/ActivityListWithDnD';
-import { Calendar, MapPin, ArrowLeft } from 'lucide-react';
+import { IItineraryDay, IItineraryDayRequest } from '@/types/itineraryDay';
+import { getItineraryDayById, addActivityToItineraryDay, deleteActivity, updateActivity, updateActivityOrder, updateItineraryDay, deleteItineraryDay } from '@/services/tripService';
+import { LoadingState } from '@/components/dashboard/dayActivity/LoadingState';
+import { ErrorState } from '@/components/dashboard/dayActivity/ErrorState';
+import ActivityListWithDnD from '@/components/dashboard/dayActivity/ActivityListWithDnD';
+import EditItineraryDayModal from '@/components/dashboard/itineraryDay/EditItineraryDayModal';
+import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
+import { Calendar, MapPin, ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 
@@ -24,6 +26,9 @@ export default function ItineraryPage({
   const [activityData, setActivityData] = useState<IActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingDay, setEditingDay] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchItineraryDayById = async () => {
     try {
@@ -100,6 +105,51 @@ export default function ItineraryPage({
     console.log('Edit activity:', activity);
   };
 
+  const handleUpdateActivity = async (activityId: string, activityData: any) => {
+    try {
+      // Convert time strings to Date objects if provided, otherwise exclude them
+      const formattedData: any = {
+        activityType: activityData.activityType,
+        title: activityData.title,
+        description: activityData.description,
+        location: activityData.location,
+      };
+
+      // Only include time fields if they have values
+      if (activityData.startTime) {
+        formattedData.startTime = new Date(`2000-01-01T${activityData.startTime}`);
+      }
+      if (activityData.endTime) {
+        formattedData.endTime = new Date(`2000-01-01T${activityData.endTime}`);
+      }
+      
+      await updateActivity(tripSlug, daySlug, activityId, formattedData);
+      // Refresh the data
+      await fetchItineraryDayById();
+    } catch (error) {
+      console.error('Error updating activity:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteDay = async () => {
+    try {
+      setDeleting(true);
+      const success = await deleteItineraryDay(tripSlug, daySlug);
+      if (success) {
+        router.push(`/dashboard/${tripSlug}`);
+      } else {
+        alert('Failed to delete itinerary day');
+      }
+    } catch (error) {
+      console.error('Error deleting itinerary day:', error);
+      alert('Failed to delete itinerary day. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   // Loading State
   if (loading) {
     return <LoadingState />;
@@ -129,11 +179,29 @@ export default function ItineraryPage({
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push(`/dashboard/${tripSlug}`)}
-              className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors font-semibold mb-4 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors font-semibold cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Itinerary
             </button>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setEditingDay(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-semibold cursor-pointer"
+              >
+                <Pencil className="w-5 h-5" />
+                Edit
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleting}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete
+              </button>
+            </div>
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -158,11 +226,52 @@ export default function ItineraryPage({
             initialActivities={activityData}
             onActivityAdd={handleAddActivity}
             onActivityEdit={handleEditActivity}
+            onActivityUpdate={handleUpdateActivity}
             onActivityDelete={handleDeleteActivity}
             onReorder={handleReorderActivities}
           />
         </div>
       </div>
+
+      {/* Edit Itinerary Day Modal */}
+      {editingDay && itineraryData && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
+          <div className="relative max-w-xl w-full mx-4 my-8">
+            <EditItineraryDayModal
+              dayId={daySlug}
+              tripId={tripSlug}
+              initialDayData={itineraryData}
+              onUpdateDay={updateItineraryDay}
+              onClose={() => setEditingDay(false)}
+              onSuccess={() => {
+                setEditingDay(false);
+                fetchItineraryDayById();
+              }}
+            />
+            <button
+              onClick={() => setEditingDay(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirm Dialog */}
+      <DeleteConfirmDialog
+        isOpen={showDeleteConfirm}
+        isLoading={deleting}
+        title="Delete Itinerary Day"
+        message={`Are you sure you want to delete Day ${itineraryData?.dayNumber}?`}
+        itemName={itineraryData ? format(new Date(itineraryData.date), 'EEEE, MMMM d, yyyy') : ''}
+        onConfirm={handleDeleteDay}
+        onCancel={() => setShowDeleteConfirm(false)}
+        confirmText="Delete Day"
+        cancelText="Keep It"
+      />
     </div>
   );
 }

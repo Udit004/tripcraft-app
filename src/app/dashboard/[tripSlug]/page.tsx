@@ -4,8 +4,8 @@
 import { getTripById } from "@/services/tripService";
 import { use, useEffect, useState } from "react";
 import { ITripResponse } from "@/types/trip";
-import TripHeader from "@/components/dashboard/tripSlug/TripHeader";
-import TripItinerary from "@/components/dashboard/tripSlug/TripItinerary";
+import TripHeader from "@/components/dashboard/itineraryDay/TripHeader";
+import TripItinerary from "@/components/dashboard/itineraryDay/TripItinerary";
 
 
 export default function TripPage({ params }: { params: Promise<{ tripSlug: string }> }) {
