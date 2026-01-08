@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { IItineraryDayResponse } from '@/types/itineraryDay'
-import { getItineraryDays, updateItineraryDay, deleteItineraryDay } from '@/services'
-import { Calendar, MapPin, Clock, AlertCircle } from 'lucide-react'
+import { getItineraryDays, updateItineraryDay, deleteItineraryDay, getTripById, updateTrip } from '@/services'
+import { Calendar, MapPin, Clock, AlertCircle, AlertTriangle } from 'lucide-react'
+import { ITripResponse } from '@/types/trip'
 import { format } from 'date-fns'
 import CreateItinerayDayModal from './CreateItinerayDayModal'
 import EditItineraryDayModal from './EditItineraryDayModal'
@@ -13,6 +14,8 @@ import DeleteConfirmDialog from '@/components/DeleteConfirmDialog'
 import { toast } from '@/lib/toast'
 import { toast as sonnerToast } from 'sonner'
 import UndoToast from '@/components/UndoToast'
+import EditTripModal from '../trip/EditTripModal'
+import { calculateTripDuration, exceedsTripDuration as checkExceedsTripDuration } from '@/utility/tripUtils'
 
 // Separate presentational component for better maintainability
 const ItineraryDayCard = ({
@@ -20,13 +23,19 @@ const ItineraryDayCard = ({
   index,
   onClick,
   onEdit,
-  onDelete
+  onDelete,
+  exceedsTripDuration = false,
+  tripDurationDays = 0,
+  onEditTrip
 }: {
   day: IItineraryDayResponse;
   index: number;
   onClick?: (day: IItineraryDayResponse) => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  exceedsTripDuration?: boolean;
+  tripDurationDays?: number;
+  onEditTrip?: () => void;
 }) => {
   const formattedDate = format(new Date(day.date), 'EEEE, MMMM d, yyyy')
   const hasActivities = day.activitiesId && day.activitiesId.length > 0
@@ -89,6 +98,29 @@ const ItineraryDayCard = ({
                 <p className="text-sm text-[#92400E]">
                   No activities planned yet. Add activities to complete your itinerary.
                 </p>
+              </div>
+            )}
+
+            {/* Trip Duration Warning */}
+            {exceedsTripDuration && (
+              <div className="mt-4 rounded-md border border-yellow-400 bg-yellow-50 px-3 py-2 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-700 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 text-xs text-yellow-800">
+                  <p className="font-semibold">Exceeds trip duration</p>
+                  <p className="mt-1">This day exceeds the {tripDurationDays}-day trip duration.</p>
+                  {onEditTrip && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEditTrip()
+                      }}
+                      className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 hover:bg-yellow-200 rounded text-yellow-900 font-semibold transition-colors text-xs"
+                    >
+                      Edit Trip Dates →
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -161,6 +193,14 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
   const [editingDay, setEditingDay] = useState<IItineraryDayResponse | null>(null)
   const [deletingDay, setDeletingDay] = useState<IItineraryDayResponse | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [trip, setTrip] = useState<ITripResponse | null>(null)
+  const [tripDurationDays, setTripDurationDays] = useState<number>(0)
+  const [editingTrip, setEditingTrip] = useState(false)
+
+  // Calculate how many days exceed trip duration
+  const daysExceedingDuration = itineraryData.filter(day => 
+    checkExceedsTripDuration(day.dayNumber, tripDurationDays)
+  ).length
 
   const fetchItineraryDays = async () => {
     try {
@@ -169,6 +209,14 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
       const days = await getItineraryDays(tripSlug)
       console.log('Fetched itinerary days:', days)
       setItineraryData(days)
+
+      // Fetch trip data to calculate duration
+      const tripData = await getTripById(tripSlug)
+      if (tripData) {
+        setTrip(tripData)
+        const duration = calculateTripDuration(tripData.startDate, tripData.endDate)
+        setTripDurationDays(duration)
+      }
     } catch (err) {
       console.error('Error fetching itinerary days:', err)
       const errorMsg = err instanceof Error ? err.message : 'Failed to load itinerary days';
@@ -271,6 +319,35 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
         </button>
       </div>
 
+      {/* Trip Duration Warning Summary */}
+      {!loading && daysExceedingDuration > 0 && (
+        <div className="mb-6 rounded-lg border-l-4 border-red-500 bg-red-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-red-800">
+                ⚠ Trip Duration Issue
+              </p>
+              <p className="mt-2 text-sm text-red-700">
+                {daysExceedingDuration} {daysExceedingDuration === 1 ? 'day' : 'days'} in your itinerary exceed the {tripDurationDays}-day trip duration.
+              </p>
+              <p className="mt-2 text-xs text-red-700">
+                Your trip is currently set from <strong>{trip ? format(new Date(trip.startDate), 'MMM d, yyyy') : ''}</strong> to <strong>{trip ? format(new Date(trip.endDate), 'MMM d, yyyy') : ''}</strong>.
+              </p>
+              {trip && (
+                <button
+                  onClick={() => setEditingTrip(true)}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-red-900 font-semibold transition-colors text-sm cursor-pointer"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Update Trip Dates Now
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       {loading ? (
         <div className="space-y-6">
@@ -284,16 +361,22 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
         <EmptyState onAddDay={() => setOpenModal(true)} />
       ) : (
         <div className="space-y-6">
-          {itineraryData.map((day, index) => (
-            <ItineraryDayCard
-              key={day._id}
-              day={day}
-              index={index}
-              onClick={handleDayClick}
-              onEdit={() => handleEditDay(day)}
-              onDelete={() => handleDeleteDay(day)}
-            />
-          ))}
+          {itineraryData.map((day, index) => {
+            const exceedsDuration = checkExceedsTripDuration(day.dayNumber, tripDurationDays)
+            return (
+              <ItineraryDayCard
+                key={day._id}
+                day={day}
+                index={index}
+                onClick={handleDayClick}
+                onEdit={() => handleEditDay(day)}
+                onDelete={() => handleDeleteDay(day)}
+                exceedsTripDuration={exceedsDuration}
+                tripDurationDays={tripDurationDays}
+                onEditTrip={() => setEditingTrip(true)}
+              />
+            )
+          })}
         </div>
       )}
 
@@ -307,6 +390,10 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
               onSuccess={() => {
                 setOpenModal(false)
                 fetchItineraryDays()
+              }}
+              onEditTrip={() => {
+                setOpenModal(false)
+                setEditingTrip(true)
               }}
             />
             <button
@@ -360,6 +447,32 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
         confirmText="Delete Day"
         cancelText="Keep It"
       />
+
+      {/* Edit Trip Modal */}
+      {editingTrip && trip && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
+          <div className="relative max-w-xl w-full mx-4 my-8">
+            <EditTripModal
+              tripId={tripSlug}
+              initialTripData={trip}
+              onUpdateTrip={updateTrip}
+              onClose={() => setEditingTrip(false)}
+              onSuccess={() => {
+                setEditingTrip(false)
+                fetchItineraryDays()
+              }}
+            />
+            <button
+              onClick={() => setEditingTrip(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

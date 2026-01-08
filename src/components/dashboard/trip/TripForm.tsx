@@ -28,6 +28,13 @@ export default function TripForm({
     headerSubtitle = 'Plan your next adventure',
     onClose
 }: TripFormProps) {
+    // Helper function to safely format dates
+    const formatDateForInput = (date: Date | string | undefined): string => {
+        if (!date) return ''
+        const dateObj = typeof date === 'string' ? new Date(date) : date
+        return dateObj.toISOString().split('T')[0]
+    }
+
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* Header */}
@@ -106,7 +113,7 @@ export default function TripForm({
                             type="date"
                             id="startDate"
                             name="startDate"
-                            value={tripDetails.startDate.toISOString().split('T')[0]}
+                            value={formatDateForInput(tripDetails.startDate)}
                             onChange={onDateChange}
                             required
                             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
@@ -122,7 +129,7 @@ export default function TripForm({
                             type="date"
                             id="endDate"
                             name="endDate"
-                            value={tripDetails.endDate.toISOString().split('T')[0]}
+                            value={formatDateForInput(tripDetails.endDate)}
                             onChange={onDateChange}
                             required
                             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"

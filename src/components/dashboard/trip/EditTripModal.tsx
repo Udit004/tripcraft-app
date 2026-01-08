@@ -9,13 +9,17 @@ import { toast } from '@/lib/toast'
 interface EditTripModalProps {
     tripId: string
     initialTripData: ICreateTripRequest
-    onUpdateTrip: (tripId: string, tripData: ICreateTripRequest) => Promise<any>
+    onUpdateTrip?: (tripId: string, tripData: ICreateTripRequest) => Promise<any>
+    onClose?: () => void
+    onSuccess?: () => void
 }
 
 export default function EditTripModal({
     tripId,
     initialTripData,
-    onUpdateTrip
+    onUpdateTrip,
+    onClose,
+    onSuccess
 }: EditTripModalProps) {
     const router = useRouter();
     const [tripDetails, setTripDetails] = useState<ICreateTripRequest>(initialTripData)
@@ -47,8 +51,9 @@ export default function EditTripModal({
         setLoading(true);
         setError(null);
         try {
-            const updatedTrip = await onUpdateTrip(tripId, tripDetails);
+            const updatedTrip = await onUpdateTrip?.(tripId, tripDetails);
             toast.success('Trip updated successfully!');
+            onSuccess?.();
             router.refresh();
             console.log('Trip updated successfully:', updatedTrip);
         } catch (err) {
@@ -72,6 +77,7 @@ export default function EditTripModal({
             buttonText="Update Trip"
             headerTitle="Edit Trip Details"
             headerSubtitle="Modify your trip information"
+            onClose={onClose}
         />
     )
 }

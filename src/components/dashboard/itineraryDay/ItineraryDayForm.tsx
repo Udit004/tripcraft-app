@@ -3,6 +3,7 @@
 import React from 'react'
 import { IItineraryDayRequest } from '@/types/itineraryDay'
 import mongoose from 'mongoose'
+import { exceedsTripDuration as checkExceedsTripDuration } from '@/utility/tripUtils'
 
 interface ItineraryDayFormProps {
     dayDetails: IItineraryDayRequest
@@ -15,6 +16,10 @@ interface ItineraryDayFormProps {
     headerTitle?: string
     headerSubtitle?: string
     onClose?: () => void
+    exceedsTripDuration?: boolean
+    tripDurationDays?: number
+    existingDaysCount?: number
+    onUpdateTripDates?: () => void
 }
 
 export default function ItineraryDayForm({
@@ -27,8 +32,16 @@ export default function ItineraryDayForm({
     buttonText = 'Create Day',
     headerTitle = 'Add Day to Itinerary',
     headerSubtitle = 'Create a new day for your trip',
-    onClose
+    onClose,
+    exceedsTripDuration = false,
+    tripDurationDays = 0,
+    existingDaysCount = 0,
+    onUpdateTripDates
 }: ItineraryDayFormProps) {
+    // Calculate the next day number and check if it exceeds trip duration
+    const nextDayNumber = existingDaysCount + 1
+    const doesExceed = checkExceedsTripDuration(nextDayNumber, tripDurationDays)
+
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* Header */}
@@ -39,6 +52,29 @@ export default function ItineraryDayForm({
 
             {/* Form Content */}
             <form onSubmit={onSubmit} className="px-6 sm:px-8 py-8 space-y-6">
+                {/* Warning Alert - Trip Duration Exceeded */}
+                {doesExceed && (
+                    <div className="rounded-md border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                        <div className="flex items-start gap-3">
+                            <span className="text-lg">⚠</span>
+                            <div className="flex-1">
+                                <p className="font-semibold">Trip duration mismatch</p>
+                                <p className="mt-1">This trip is set to {tripDurationDays} days, but you are creating Day {nextDayNumber}.</p>
+                                <p className="mt-2 text-yellow-700">Consider updating your trip dates.</p>
+                                {onUpdateTripDates && (
+                                    <button
+                                        type="button"
+                                        onClick={onUpdateTripDates}
+                                        className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 hover:bg-yellow-200 rounded text-yellow-900 font-semibold transition-colors text-xs cursor-pointer"
+                                    >
+                                        Update Trip Dates →
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Error Alert */}
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
