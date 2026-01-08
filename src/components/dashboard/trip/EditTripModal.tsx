@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { ICreateTripRequest } from '@/types/trip'
 import { useRouter } from 'next/navigation'
 import TripForm from './TripForm'
+import { toast } from '@/lib/toast'
 
 interface EditTripModalProps {
     tripId: string
@@ -47,10 +48,13 @@ export default function EditTripModal({
         setError(null);
         try {
             const updatedTrip = await onUpdateTrip(tripId, tripDetails);
+            toast.success('Trip updated successfully!');
             router.refresh();
             console.log('Trip updated successfully:', updatedTrip);
         } catch (err) {
-            setError('Failed to update trip. Please try again.');
+            const errorMsg = 'Failed to update trip. Please try again.';
+            setError(errorMsg);
+            toast.error(errorMsg);
             console.error(err);
         } finally {
             setLoading(false);

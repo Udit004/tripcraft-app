@@ -5,6 +5,7 @@ import { ICreateTripRequest } from '@/types/trip'
 import { createTrip } from '@/services'
 import { useRouter } from 'next/navigation'
 import TripForm from './TripForm'
+import { toast } from '@/lib/toast'
 
 export default function CreateTripModal() {
     const router = useRouter();
@@ -40,6 +41,7 @@ export default function CreateTripModal() {
         setError(null);
         try {
             const newTrip = await createTrip(tripDetails);
+            toast.success('Trip created successfully!');
             router.push(`/dashboard/${newTrip?._id}`);
             setTripDetails({
                 tripName: '',
@@ -50,7 +52,9 @@ export default function CreateTripModal() {
             });
             console.log('Trip created successfully:', newTrip);
         } catch (err) {
-            setError('Failed to create trip. Please try again.');
+            const errorMsg = 'Failed to create trip. Please try again.';
+            setError(errorMsg);
+            toast.error(errorMsg);
             console.error(err);
         } finally {
             setLoading(false);

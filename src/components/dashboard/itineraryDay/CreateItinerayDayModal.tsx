@@ -6,6 +6,7 @@ import { CreateItineraryDay } from '@/services/tripService'
 import { useRouter } from 'next/navigation'
 import mongoose from 'mongoose'
 import ItineraryDayForm from './ItineraryDayForm'
+import { toast } from '@/lib/toast'
 
 interface CreateItineraryDayModalProps {
     tripId: string | mongoose.Types.ObjectId
@@ -47,6 +48,7 @@ export default function CreateItineraryDayModal({ tripId, onClose, onSuccess }: 
         try {
             const newDay = await CreateItineraryDay(dayDetails)
             console.log('Itinerary day created successfully:', newDay)
+            toast.success('Itinerary day created successfully!');
             router.push(`/dashboard/${tripId}/itinerary/${newDay._id}`)
             setDayDetails({
                 tripId: tripId,
@@ -58,7 +60,9 @@ export default function CreateItineraryDayModal({ tripId, onClose, onSuccess }: 
             onSuccess?.()
             onClose?.()
         } catch (err) {
-            setError('Failed to create itinerary day. Please try again.')
+            const errorMsg = 'Failed to create itinerary day. Please try again.';
+            setError(errorMsg)
+            toast.error(errorMsg);
             console.error(err)
         } finally {
             setLoading(false)

@@ -3,15 +3,20 @@
 import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IActivity } from '@/types/activity';
-import { IItineraryDay, IItineraryDayRequest } from '@/types/itineraryDay';
+import { IItineraryDay } from '@/types/itineraryDay';
 import { getItineraryDayById, addActivityToItineraryDay, deleteActivity, updateActivity, updateActivityOrder, updateItineraryDay, deleteItineraryDay } from '@/services/tripService';
 import { LoadingState } from '@/components/dashboard/dayActivity/LoadingState';
 import { ErrorState } from '@/components/dashboard/dayActivity/ErrorState';
 import ActivityListWithDnD from '@/components/dashboard/dayActivity/ActivityListWithDnD';
 import EditItineraryDayModal from '@/components/dashboard/itineraryDay/EditItineraryDayModal';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
-import { Calendar, MapPin, ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import DayHeader from '@/components/itinerary/DayHeader';
+import { analyzeDay } from '@/lib/dayWarnings';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from '@/lib/toast';
+import { toast as sonnerToast } from 'sonner';
+import UndoToast from '@/components/UndoToast';
 
 
 export default function ItineraryPage({ 
@@ -30,6 +35,11 @@ export default function ItineraryPage({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Analyze day for warnings whenever activities change
+  const dayWarnings = React.useMemo(() => {
+    return analyzeDay(activityData);
+  }, [activityData]);
+
   const fetchItineraryDayById = async () => {
     try {
       setLoading(true);
@@ -41,11 +51,15 @@ export default function ItineraryPage({
         setItineraryData(dayData);
         setActivityData(dayData.activities || []);
       } else {
-        setError('Itinerary day not found');
+        const errorMsg = 'Itinerary day not found';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error('Error fetching itinerary:', error);
-      setError('Failed to fetch itinerary day data');
+      const errorMsg = 'Failed to fetch itinerary day data';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -67,10 +81,12 @@ export default function ItineraryPage({
       };
       
       await addActivityToItineraryDay(tripSlug, daySlug, formattedData);
+      toast.success('Activity added successfully!');
       // Refresh the data
       await fetchItineraryDayById();
     } catch (error) {
       console.error('Error adding activity:', error);
+      toast.error('Failed to add activity. Please try again.');
       throw error;
     }
   };
@@ -78,10 +94,12 @@ export default function ItineraryPage({
   const handleDeleteActivity = async (activityId: string) => {
     try {
       await deleteActivity(tripSlug, daySlug, activityId);
+      toast.delete('Activity deleted successfully!');
       // Refresh the data
       await fetchItineraryDayById();
     } catch (error) {
       console.error('Error deleting activity:', error);
+      toast.error('Failed to delete activity. Please try again.');
       throw error;
     }
   };
@@ -92,8 +110,10 @@ export default function ItineraryPage({
       await updateActivityOrder(tripSlug, daySlug, activityIds);
       // Update local state
       setActivityData(activities);
+      toast.success('Activities reordered successfully!');
     } catch (error) {
       console.error('Error reordering activities:', error);
+      toast.error('Failed to reorder activities. Please try again.');
       // Revert on error
       await fetchItineraryDayById();
       throw error;
@@ -124,29 +144,66 @@ export default function ItineraryPage({
       }
       
       await updateActivity(tripSlug, daySlug, activityId, formattedData);
+      toast.success('Activity updated successfully!');
       // Refresh the data
       await fetchItineraryDayById();
     } catch (error) {
       console.error('Error updating activity:', error);
+      toast.error('Failed to update activity. Please try again.');
       throw error;
     }
   };
 
   const handleDeleteDay = async () => {
+    if (!itineraryData) return;
+    
     try {
       setDeleting(true);
-      const success = await deleteItineraryDay(tripSlug, daySlug);
-      if (success) {
-        router.push(`/dashboard/${tripSlug}`);
+      const result = await deleteItineraryDay(tripSlug, daySlug);
+      
+      if (result.success) {
+        setShowDeleteConfirm(false);
+        
+        // Show undo toast with countdown
+        if (result.deletionLogId) {
+          const dayNumber = itineraryData.dayNumber;
+          const dayDate = format(new Date(itineraryData.date), 'MMM d, yyyy');
+          
+          sonnerToast.custom(
+            (t) => (
+              <UndoToast
+                message={`Day ${dayNumber} (${dayDate}) deleted`}
+                deletionLogId={result.deletionLogId!}
+                onUndo={() => {
+                  sonnerToast.dismiss(t);
+                  // Refetch the data instead of navigating back
+                  fetchItineraryDayById();
+                }}
+                onExpire={() => {
+                  sonnerToast.dismiss(t);
+                  // Navigate back only after undo window expires
+                  router.push(`/dashboard/${tripSlug}`);
+                }}
+                undoWindowSeconds={result.undoWindowSeconds || 10}
+              />
+            ),
+            { duration: (result.undoWindowSeconds || 10) * 1000 }
+          );
+          
+          // Don't navigate immediately, wait for undo window
+          // Navigation happens in onExpire callback
+        } else {
+          toast.delete('Itinerary day deleted successfully!');
+          router.push(`/dashboard/${tripSlug}`);
+        }
       } else {
-        alert('Failed to delete itinerary day');
+        toast.error('Failed to delete itinerary day');
       }
     } catch (error) {
       console.error('Error deleting itinerary day:', error);
-      alert('Failed to delete itinerary day. Please try again.');
+      toast.error('Failed to delete itinerary day. Please try again.');
     } finally {
       setDeleting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
@@ -203,19 +260,11 @@ export default function ItineraryPage({
               </button>
             </div>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Day {itineraryData.dayNumber}
-            </h2>
-            <div className="flex items-center gap-4 text-gray-600">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-600" />
-                <span className="font-medium">
-                  {format(new Date(itineraryData.date), 'EEEE, MMMM d, yyyy')}
-                </span>
-              </div>
-            </div>
-          </div>
+          <DayHeader 
+            dayNumber={itineraryData.dayNumber}
+            date={itineraryData.date.toString()}
+            warnings={dayWarnings}
+          />
         </div>
 
         {/* Activities Section */}

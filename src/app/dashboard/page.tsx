@@ -1,8 +1,8 @@
 "use client"
 import ProtectRoutes from '@/components/ProtectRoutes';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getTrips, updateTrip, deleteTrip } from '@/services/tripService';
+import { getTrips, updateTrip, deleteTrip, undoDeletion } from '@/services/tripService';
 import { ITripResponse, ICreateTripRequest } from '@/types/trip';
 import { Button } from '@/components/ui/button';
 import { Plus, AlertCircle, Loader2 } from 'lucide-react';
@@ -13,6 +13,9 @@ import TripCard from '@/components/dashboard/trip/TripCard';
 import EmptyState from '@/components/dashboard/trip/EmptyState';
 import { colors } from '@/constants/colors';
 import mongoose from 'mongoose';
+import { toast } from '@/lib/toast';
+import { toast as sonnerToast } from 'sonner';
+import UndoToast from '@/components/UndoToast';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -34,7 +37,9 @@ export default function Dashboard() {
       setTrips(fetchedTrips || []);
     } catch (error) {
       console.error('Error fetching trips:', error);
-      setError('Failed to load trips. Please try again.');
+      const errorMsg = 'Failed to load trips. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       setTrips([]);
     } finally {
       setLoading(false);
@@ -57,10 +62,17 @@ export default function Dashboard() {
   };
 
   const handleUpdateTrip = async (tripId: string, tripData: ICreateTripRequest) => {
-    const result = await updateTrip(tripId, tripData);
-    setOpenEditModal(false);
-    await fetchTrips();
-    return result;
+    try {
+      const result = await updateTrip(tripId, tripData);
+      setOpenEditModal(false);
+      toast.success('Trip updated successfully!');
+      await fetchTrips();
+      return result;
+    } catch (error) {
+      console.error('Error updating trip:', error);
+      toast.error('Failed to update trip. Please try again.');
+      throw error;
+    }
   };
 
   const handleDeleteTrip = (trip: ITripResponse) => {
@@ -68,30 +80,55 @@ export default function Dashboard() {
     setShowDeleteConfirm(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deletingTrip) return;
 
     try {
       setIsDeleting(true);
-      const success = await deleteTrip(deletingTrip._id!);
-      if (success) {
+      const result = await deleteTrip(deletingTrip._id!);
+
+      if (result && result.success) {
+        // Remove from UI immediately (optimistic update)
         setTrips(prevTrips => prevTrips.filter(trip => trip._id !== deletingTrip._id));
+
+        // Show undo toast with proper callback
+        sonnerToast.custom(
+          (id) => (
+            <UndoToast
+              message={`"${deletingTrip.tripName}" deleted`}
+              deletionLogId={result.deletionLogId}
+              undoWindowSeconds={result.undoWindowSeconds}
+              onUndo={() => {
+                sonnerToast.dismiss(id);
+                fetchTrips();
+              }}
+              onExpire={() => {
+                sonnerToast.dismiss(id);
+              }}
+            />
+          )
+        );
+
         setShowDeleteConfirm(false);
         setDeletingTrip(null);
       } else {
-        setError('Failed to delete trip. Please try again.');
+        const errorMsg = 'Failed to delete trip. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting trip:', error);
-      setError('Failed to delete trip. Please try again.');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to delete trip. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [deletingTrip]);
 
   return (
     <ProtectRoutes>
-      <div 
+      <div
         className="min-h-screen py-8 px-4"
         style={{ backgroundColor: colors.background }}
       >
@@ -100,7 +137,7 @@ export default function Dashboard() {
           <header className="mb-12">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
-                <h1 
+                <h1
                   className="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent"
                   style={{
                     backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
@@ -112,12 +149,12 @@ export default function Dashboard() {
                   Plan, organize, and track all your adventures in one place
                 </p>
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={() => setOpenCreateModal(true)}
                 size="lg"
                 className="gap-2 px-6 py-6 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap cursor-pointer"
-                style={{ 
+                style={{
                   backgroundColor: colors.primary,
                   color: colors.surface
                 }}
@@ -129,7 +166,7 @@ export default function Dashboard() {
 
             {/* Stats Bar */}
             {!loading && trips.length > 0 && (
-              <div 
+              <div
                 className="mt-8 p-6 rounded-xl"
                 style={{ backgroundColor: colors.surface }}
               >
@@ -157,9 +194,9 @@ export default function Dashboard() {
 
           {/* Error Alert */}
           {error && (
-            <div 
+            <div
               className="mb-6 p-4 rounded-lg flex items-start gap-3"
-              style={{ 
+              style={{
                 backgroundColor: '#FEE2E2',
                 borderLeft: `4px solid #DC2626`
               }}
@@ -175,9 +212,9 @@ export default function Dashboard() {
           {/* Content Area */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24">
-              <Loader2 
-                size={48} 
-                className="animate-spin mb-4" 
+              <Loader2
+                size={48}
+                className="animate-spin mb-4"
                 style={{ color: colors.primary }}
               />
               <p style={{ color: colors.textMuted }}>Loading your trips...</p>
@@ -248,7 +285,7 @@ export default function Dashboard() {
           isOpen={showDeleteConfirm}
           isLoading={isDeleting}
           title="Delete Trip"
-          message="Are you sure you want to delete this trip? This action cannot be undone."
+          message="Are you sure you want to delete this trip? You will have 10 seconds to undo this action."
           itemName={deletingTrip?.tripName}
           onConfirm={handleConfirmDelete}
           onCancel={() => {

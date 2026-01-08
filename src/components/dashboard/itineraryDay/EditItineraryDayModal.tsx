@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { IItineraryDayRequest, IItineraryDayResponse } from '@/types/itineraryDay'
 import mongoose from 'mongoose'
 import ItineraryDayForm from './ItineraryDayForm'
+import { toast } from '@/lib/toast'
 
 interface EditItineraryDayModalProps {
     dayId: string
@@ -68,11 +69,14 @@ export default function EditItineraryDayModal({
             }
             await onUpdateDay(String(tripId), dayId, updateData)
             console.log('Itinerary day updated successfully')
+            toast.success('Itinerary day updated successfully!');
 
             onSuccess?.()
             onClose?.()
         } catch (err) {
-            setError('Failed to update itinerary day. Please try again.')
+            const errorMsg = 'Failed to update itinerary day. Please try again.';
+            setError(errorMsg)
+            toast.error(errorMsg);
             console.error(err)
         } finally {
             setLoading(false)

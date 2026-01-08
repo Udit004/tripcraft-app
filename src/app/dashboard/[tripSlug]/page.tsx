@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import { ITripResponse } from "@/types/trip";
 import TripHeader from "@/components/dashboard/itineraryDay/TripHeader";
 import TripItinerary from "@/components/dashboard/itineraryDay/TripItinerary";
+import { toast } from '@/lib/toast';
 
 
 export default function TripPage({ params }: { params: Promise<{ tripSlug: string }> }) {
@@ -18,7 +19,9 @@ export default function TripPage({ params }: { params: Promise<{ tripSlug: strin
     const fetchTrip = async () => {
       if (!tripSlug) {
         console.error('No tripSlug available!');
-        setError('Invalid trip ID');
+        const errorMsg = 'Invalid trip ID';
+        setError(errorMsg);
+        toast.error(errorMsg);
         setLoading(false);
         return;
       }
@@ -29,7 +32,9 @@ export default function TripPage({ params }: { params: Promise<{ tripSlug: strin
         setTrip(tripData);
       } catch (err) {
         console.error('Error fetching trip:', err);
-        setError('Failed to load trip');
+        const errorMsg = 'Failed to load trip';
+        setError(errorMsg);
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
       }

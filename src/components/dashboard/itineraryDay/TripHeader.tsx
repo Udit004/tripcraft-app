@@ -10,6 +10,7 @@ import { updateTrip, deleteTrip } from "@/services/tripService";
 import EditTripModal from "../trip/EditTripModal";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
 import { colors } from "@/constants/colors";
+import { toast } from '@/lib/toast'
 
 interface TripHeaderProps {
   trip: ITripResponse;
@@ -54,6 +55,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
     
     try {
       await deleteTrip(trip._id!);
+      toast.delete('Trip deleted successfully!');
       router.push('/dashboard');
     } catch (err) {
       setError('Failed to delete trip. Please try again.');

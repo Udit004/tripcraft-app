@@ -10,6 +10,9 @@ import CreateItinerayDayModal from './CreateItinerayDayModal'
 import EditItineraryDayModal from './EditItineraryDayModal'
 import SwipeableItem from '../SwipeableItem'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog'
+import { toast } from '@/lib/toast'
+import { toast as sonnerToast } from 'sonner'
+import UndoToast from '@/components/UndoToast'
 
 // Separate presentational component for better maintainability
 const ItineraryDayCard = ({
@@ -120,7 +123,7 @@ const ErrorState = ({ message, onRetry }: { message: string; onRetry: () => void
 )
 
 // Empty state component
-const EmptyState = () => (
+const EmptyState = ({ onAddDay }: { onAddDay?: () => void }) => (
   <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
     <div className="flex justify-center mb-4">
       <div className="w-20 h-20 rounded-full bg-[#F8FAFC] flex items-center justify-center">
@@ -128,9 +131,16 @@ const EmptyState = () => (
       </div>
     </div>
     <h3 className="text-xl font-semibold text-[#0F172A] mb-2">No Itinerary Yet</h3>
-    <p className="text-[#475569] max-w-md mx-auto">
+    <p className="text-[#475569] max-w-md mx-auto mb-6">
       Your trip itinerary is empty. Start planning your adventure by adding days and activities.
     </p>
+    <button
+      onClick={onAddDay}
+      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer"
+    >
+      <Calendar className="w-5 h-5" />
+      Add First Day
+    </button>
   </div>
 )
 
@@ -154,7 +164,9 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
       setItineraryData(days)
     } catch (err) {
       console.error('Error fetching itinerary days:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load itinerary days')
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load itinerary days';
+      setError(errorMsg)
+      toast.error(errorMsg);
       setItineraryData([])
     } finally {
       setLoading(false)
@@ -183,19 +195,48 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
 
     try {
       setIsDeleting(true)
-      const success = await deleteItineraryDay(tripSlug, deletingDay._id)
-      if (success) {
+      const result = await deleteItineraryDay(tripSlug, deletingDay._id)
+      
+      if (result.success) {
+        setDeletingDay(null)
+        setShowDeleteConfirm(false)
+        
+        // Show undo toast with countdown
+        if (result.deletionLogId) {
+          const dayNumber = deletingDay.dayNumber;
+          const dayDate = format(new Date(deletingDay.date), 'MMM d, yyyy');
+          
+          sonnerToast.custom(
+            (t) => (
+              <UndoToast
+                message={`Day ${dayNumber} (${dayDate}) deleted`}
+                deletionLogId={result.deletionLogId!}
+                onUndo={() => {
+                  sonnerToast.dismiss(t);
+                  fetchItineraryDays();
+                }}
+                onExpire={() => {
+                  sonnerToast.dismiss(t);
+                }}
+                undoWindowSeconds={result.undoWindowSeconds || 10}
+              />
+            ),
+            { duration: (result.undoWindowSeconds || 10) * 1000 }
+          );
+        } else {
+          toast.delete('Itinerary day deleted successfully!');
+        }
+        
         // Refresh the itinerary list
         await fetchItineraryDays()
       } else {
-        alert('Failed to delete itinerary day. Please try again.')
+        toast.error('Failed to delete itinerary day. Please try again.');
       }
     } catch (err) {
       console.error('Error deleting itinerary day:', err)
-      alert('Failed to delete itinerary day. Please try again.')
+      toast.error('Failed to delete itinerary day. Please try again.');
     } finally {
       setIsDeleting(false)
-      setDeletingDay(null)
     }
   }
 
@@ -233,7 +274,7 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
       ) : error ? (
         <ErrorState message={error} onRetry={fetchItineraryDays} />
       ) : itineraryData.length === 0 ? (
-        <EmptyState />
+        <EmptyState onAddDay={() => setOpenModal(true)} />
       ) : (
         <div className="space-y-6">
           {itineraryData.map((day, index) => (

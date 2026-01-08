@@ -192,7 +192,7 @@ export default function SwipeableItem({
             <button
               onClick={handleEditClick}
               disabled={disabled}
-              className="flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              className="flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-md"
               aria-label="Edit"
             >
               <Pencil className="w-5 h-5" />
@@ -202,7 +202,7 @@ export default function SwipeableItem({
             <button
               onClick={handleDeleteClick}
               disabled={disabled}
-              className="flex items-center justify-center w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              className="flex items-center justify-center w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-md"
               aria-label="Delete"
             >
               <Trash2 className="w-5 h-5" />
@@ -218,7 +218,7 @@ export default function SwipeableItem({
             <button
               onClick={() => setShowDesktopMenu(!showDesktopMenu)}
               disabled={disabled}
-              className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               aria-label="Actions"
             >
               <MoreVertical className="h-4 w-4" />
@@ -238,7 +238,7 @@ export default function SwipeableItem({
                         setShowDesktopMenu(false);
                       }}
                       disabled={disabled}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     >
                       <Pencil className="w-4 h-4" />
                       Edit
@@ -251,7 +251,7 @@ export default function SwipeableItem({
                         setShowDesktopMenu(false);
                       }}
                       disabled={disabled}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete
