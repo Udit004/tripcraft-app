@@ -102,4 +102,178 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
             { status: 500 }
         );
     }
-};
+}
+
+// Update a specific itinerary day
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
+    const { isAuthenticated, user, error } = await checkAuthentication(req);
+    if (!isAuthenticated) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Authentication failed',
+                error: error
+            }
+        )
+    }
+    try {
+        await connectDB();
+        const resolvedParams = await params;
+        const { tripId, dayId } = resolvedParams;
+        const dayData = await req.json();
+
+        const trip = await Trip.findById(tripId);
+
+        if (!trip) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Trip not found',
+                },
+                { status: 404 }
+            );
+        }
+        if (trip.userId.toString() !== user._id.toString()) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Unauthorized access to this trip',
+                },
+                { status: 403 }
+            );
+        }
+
+        const itineraryDay = await ItineraryDayModel.findById(dayId);
+
+        if (!itineraryDay) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Itinerary Day not found',
+                },
+                { status: 404 }
+            );
+        }
+
+        const updatedItineraryDay = await ItineraryDayModel.findByIdAndUpdate(
+            dayId,
+            {
+                dayNumber: dayData.dayNumber,
+                date: dayData.date,
+                updatedAt: new Date(),
+            },
+            { new: true }
+        );
+
+        const itineraryDayResponse: IItineraryDay = {
+            _id: updatedItineraryDay._id.toString(),
+            tripId: updatedItineraryDay.tripId.toString(),
+            dayNumber: updatedItineraryDay.dayNumber,
+            date: updatedItineraryDay.date,
+            activitiesId: updatedItineraryDay.activitiesId.map((id: mongoose.Types.ObjectId) => id.toString()),
+            createdAt: updatedItineraryDay.createdAt,
+            updatedAt: updatedItineraryDay.updatedAt,
+        };
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: 'Itinerary Day updated successfully',
+                itinerary: itineraryDayResponse,
+            } as IItineraryDayApiResponse,
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error('Error updating itinerary day:', error);
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Internal Server Error',
+            } as IItineraryDayApiResponse,
+            { status: 500 }
+        );
+    }
+}
+
+// Delete a specific itinerary day
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
+    const { isAuthenticated, user, error } = await checkAuthentication(req);
+    if (!isAuthenticated) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Authentication failed',
+                error: error
+            }
+        )
+    }
+    try {
+        await connectDB();
+        const resolvedParams = await params;
+        const { tripId, dayId } = resolvedParams;
+
+        const trip = await Trip.findById(tripId);
+
+        if (!trip) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Trip not found',
+                },
+                { status: 404 }
+            );
+        }
+        if (trip.userId.toString() !== user._id.toString()) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Unauthorized access to this trip',
+                },
+                { status: 403 }
+            );
+        }
+
+        const itineraryDay = await ItineraryDayModel.findById(dayId);
+
+        if (!itineraryDay) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Itinerary Day not found',
+                },
+                { status: 404 }
+            );
+        }
+
+        // Delete all activities associated with this itinerary day
+        await Activity.deleteMany({ itineraryDayId: dayId });
+
+        // Delete the itinerary day
+        await ItineraryDayModel.findByIdAndDelete(dayId);
+
+        // Remove the day from trip's itinerary days array if it exists
+        await Trip.findByIdAndUpdate(
+            tripId,
+            { $pull: { itineraryDays: dayId } },
+            { new: true }
+        );
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: 'Itinerary Day deleted successfully',
+            } as IItineraryDayApiResponse,
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error('Error deleting itinerary day:', error);
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Internal Server Error',
+            } as IItineraryDayApiResponse,
+            { status: 500 }
+        );
+    }
+}
+
