@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { ICreateTripRequest } from '@/types/trip'
+import { GradientButton } from '@/components/ui/GradientButton'
 
 interface TripFormProps {
     tripDetails: ICreateTripRequest
@@ -146,10 +147,11 @@ export default function TripForm({
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                    <button
+                    <GradientButton
                         type="submit"
+                        variant={buttonText === 'Create Trip' ? 'create' : 'edit'}
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
+                        fullWidth
                     >
                         {loading ? (
                             <span className="flex items-center justify-center">
@@ -162,18 +164,19 @@ export default function TripForm({
                         ) : (
                             buttonText
                         )}
-                    </button>
+                    </GradientButton>
                 </div>
 
                 {/* Cancel Button */}
                 {onClose && (
-                    <button
+                    <GradientButton
                         type="button"
+                        variant="neutral"
                         onClick={onClose}
-                        className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 cursor-pointer"
+                        fullWidth
                     >
                         Cancel
-                    </button>
+                    </GradientButton>
                 )}
             </form>
         </div>
