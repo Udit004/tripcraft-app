@@ -6,6 +6,7 @@ import DraggableActivityCard from './DraggableActivityCard'
 import CreateActivityModal from './CreateActivityModal'
 import { Plus, Calendar, AlertTriangle, Zap } from 'lucide-react'
 import { hasOrderTimeMismatch, autoFixActivityOrder } from '@/utility/activityTimeOrder'
+import { isMealType, isRestType } from '@/constants/activityTypes'
 import { GradientButton } from '@/components/ui/GradientButton'
 import { toast as sonnerToast, toast } from 'sonner'
 
@@ -132,10 +133,10 @@ export default function ActivityListWithDnD({
 
   const handleAddBreakActivity = async (data: any) => {
     try {
-      // Add activityType as 'Food' for break/meal
+      // Add activityType as 'break' for break/meal activity
       const breakActivityData = {
         ...data,
-        activityType: 'Food'
+        activityType: 'break'
       }
       
       if (onActivityAdd) {
@@ -155,8 +156,7 @@ export default function ActivityListWithDnD({
 
   // Check if day has any break or food activity
   const hasBreakOrFood = activities.some(activity => {
-    const type = activity.activityType.toLowerCase()
-    return type === 'food' || type === 'rest' || type === 'break'
+    return isMealType(activity.activityType) || isRestType(activity.activityType)
   })
 
   return (
