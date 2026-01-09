@@ -13,6 +13,7 @@ import { colors } from "@/constants/colors";
 import { toast } from '@/lib/toast'
 import { toast as sonnerToast } from 'sonner'
 import UndoToast from "@/components/UndoToast";
+import { GradientButton } from "@/components/ui/GradientButton";
 
 interface TripHeaderProps {
   trip: ITripResponse;
@@ -146,18 +147,18 @@ export default function TripHeader({ trip }: TripHeaderProps) {
             
             {/* Action Buttons */}
             <div className="flex gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
+              <GradientButton
+                variant="edit"
+                size="md"
                 onClick={() => setOpenEditModal(true)}
                 className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm transition-all cursor-pointer"
               >
                 <Edit2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Edit</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </GradientButton>
+              <GradientButton
+                variant="delete"
+                size="md"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
                 className="flex items-center gap-2 bg-red-600/80 hover:bg-red-700 border-red-500/30 text-white backdrop-blur-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -166,7 +167,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
                 <span className="hidden sm:inline">
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </span>
-              </Button>
+              </GradientButton>
             </div>
           </div>
         </div>

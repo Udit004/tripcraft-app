@@ -11,6 +11,7 @@ import EditItineraryDayModal from './EditItineraryDayModal'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog'
 import EditTripModal from '../trip/EditTripModal'
 import UndoToast from '@/components/UndoToast'
+import { GradientButton } from '@/components/ui/GradientButton'
 import {
   useItinerary,
   useItineraryDelete,
@@ -76,12 +77,13 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
             Your day-by-day travel plan
           </p>
         </div>
-        <button
+        <GradientButton
+          variant="primary"
+          size="md"
           onClick={() => setOpenModal(true)}
-          className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer"
         >
           + Add Day
-        </button>
+        </GradientButton>
       </div>
 
       {/* Trip Duration Warning Summary */}

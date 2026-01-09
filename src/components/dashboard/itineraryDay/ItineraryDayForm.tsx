@@ -4,6 +4,7 @@ import React from 'react'
 import { IItineraryDayRequest } from '@/types/itineraryDay'
 import mongoose from 'mongoose'
 import { exceedsTripDuration as checkExceedsTripDuration } from '@/utility/tripUtils'
+import { GradientButton } from '@/components/ui/GradientButton'
 
 interface ItineraryDayFormProps {
     dayDetails: IItineraryDayRequest
@@ -146,10 +147,11 @@ export default function ItineraryDayForm({
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                    <button
+                    <GradientButton
                         type="submit"
+                        variant={buttonText === 'Create Day' ? 'create' : 'edit'}
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                        fullWidth
                     >
                         {loading ? (
                             <span className="flex items-center justify-center">
@@ -162,18 +164,19 @@ export default function ItineraryDayForm({
                         ) : (
                             buttonText
                         )}
-                    </button>
+                    </GradientButton>
                 </div>
 
                 {/* Cancel Button */}
                 {onClose && (
-                    <button
+                    <GradientButton
                         type="button"
+                        variant="neutral"
                         onClick={onClose}
-                        className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 cursor-pointer"
+                        fullWidth
                     >
                         Cancel
-                    </button>
+                    </GradientButton>
                 )}
             </form>
         </div>

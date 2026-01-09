@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import ActivityForm from './ActivityForm'
+import { extractTimeFromISO } from '@/lib/utils'
 
 interface Activity {
   _id: string
@@ -49,8 +50,8 @@ export default function EditActivityModal({ isOpen, activity, onClose, onSubmit 
         title: activity.title || '',
         description: activity.description || '',
         location: activity.location || '',
-        startTime: activity.startTime || '',
-        endTime: activity.endTime || '',
+        startTime: activity.startTime ? extractTimeFromISO(activity.startTime) : '',
+        endTime: activity.endTime ? extractTimeFromISO(activity.endTime) : '',
       })
       setError(null)
     }
@@ -79,8 +80,17 @@ export default function EditActivityModal({ isOpen, activity, onClose, onSubmit 
 
   if (!isOpen || !activity) return null
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto">
+    <div 
+      onClick={handleBackdropClick}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center pt-20 overflow-y-auto"
+    >
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <ActivityForm
           formData={formData}

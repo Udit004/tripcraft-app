@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react'
 import { IActivity } from '@/types/activity'
 import DraggableActivityCard from './DraggableActivityCard'
-import InlineActivityForm from './InlineActivityForm'
+import CreateActivityModal from './CreateActivityModal'
 import { Plus, Calendar, AlertTriangle } from 'lucide-react'
 import { hasOrderTimeMismatch } from '@/utility/activityTimeOrder'
+import { GradientButton } from '@/components/ui/GradientButton'
 
 interface ActivityListWithDnDProps {
   tripId: string
@@ -29,7 +30,7 @@ export default function ActivityListWithDnD({
   onReorder,
 }: ActivityListWithDnDProps) {
   const [activities, setActivities] = useState<IActivity[]>(initialActivities)
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [hasWarning, setHasWarning] = useState(false)
@@ -46,7 +47,7 @@ export default function ActivityListWithDnD({
   const handleAddActivity = async (data: any) => {
     if (onActivityAdd) {
       await onActivityAdd(data)
-      setShowForm(false)
+      setShowModal(false)
     }
   }
 
@@ -105,23 +106,17 @@ export default function ActivityListWithDnD({
           <Calendar className="w-5 h-5 text-indigo-600" />
           Activities ({activities.length})
         </h3>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-teal-600 transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Add Activity
-          </button>
-        )}
+        <GradientButton
+          variant="primary"
+          size="md"
+          onClick={() => setShowModal(true)}
+        >
+          <Plus className="w-4 h-4" />
+          Add Activity
+        </GradientButton>
       </div>
 
-      {/* Inline Form */}
-      <InlineActivityForm
-        isOpen={showForm}
-        onSubmit={handleAddActivity}
-        onCancel={() => setShowForm(false)}
-      />
+    
 
       {/* Time-Order Mismatch Warning */}
       {hasWarning && activities.length > 1 && (
@@ -134,17 +129,18 @@ export default function ActivityListWithDnD({
       )}
 
       {/* Activities List */}
-      {activities.length === 0 && !showForm ? (
+      {activities.length === 0 ? (
         <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-gray-900 mb-2">No Activities Yet</h4>
           <p className="text-gray-600 mb-4">Start planning your day by adding activities</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+          <GradientButton
+            variant="primary"
+            size="md"
+            onClick={() => setShowModal(true)}
           >
             Add Your First Activity
-          </button>
+          </GradientButton>
         </div>
       ) : (
         <div className="space-y-3">
@@ -183,6 +179,13 @@ export default function ActivityListWithDnD({
           </p>
         </div>
       )}
+
+      {/* Activity Modal */}
+      <CreateActivityModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleAddActivity}
+      />
     </div>
   )
 }
