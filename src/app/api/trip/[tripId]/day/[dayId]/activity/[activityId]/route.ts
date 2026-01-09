@@ -3,6 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import Activity from '@/models/Activity';
 import ItineraryDay from '@/models/ItineraryDay';
 import { checkAuthentication } from '@/lib/verifyUser';
+import { VALID_ACTIVITY_TYPES } from '@/constants/activityTypes';
 
 // DELETE - Remove activity
 export async function DELETE(
@@ -93,6 +94,17 @@ export async function PUT(
         await dbConnect();
 
         const body = await request.json();
+
+        // Validate activity type if provided in update
+        if (body.activityType && !VALID_ACTIVITY_TYPES.includes(body.activityType)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: `Invalid activity type. Must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}`,
+                },
+                { status: 400 }
+            );
+        }
 
         // Update activity
         const updatedActivity = await Activity.findByIdAndUpdate(

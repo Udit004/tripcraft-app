@@ -35,3 +35,36 @@ export function hasOrderTimeMismatch(activities: {
 
   return false;
 }
+
+/**
+ * Automatically fixes activity order by sorting them based on their startTime.
+ * Activities without startTime are placed at the end.
+ * 
+ * @param activities - Array of activities to reorder
+ * @returns New array sorted by startTime
+ * 
+ * @example
+ * const activities = [
+ *   { _id: '2', startTime: '2024-01-01T10:00:00', ... },
+ *   { _id: '1', startTime: '2024-01-01T09:00:00', ... }
+ * ];
+ * const sorted = autoFixActivityOrder(activities);
+ * // Returns activities sorted chronologically by startTime
+ */
+export function autoFixActivityOrder<T extends { startTime?: string; [key: string]: any }>(
+  activities: T[]
+): T[] {
+  // Separate activities with and without startTime
+  const withTime = activities.filter(a => a.startTime);
+  const withoutTime = activities.filter(a => !a.startTime);
+
+  // Sort activities with time by startTime
+  const sorted = [...withTime].sort((a, b) => {
+    const timeA = new Date(a.startTime!).getTime();
+    const timeB = new Date(b.startTime!).getTime();
+    return timeA - timeB;
+  });
+
+  // Return sorted activities followed by those without time
+  return [...sorted, ...withoutTime];
+}

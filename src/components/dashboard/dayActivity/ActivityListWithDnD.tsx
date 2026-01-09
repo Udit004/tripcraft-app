@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react'
 import { IActivity } from '@/types/activity'
 import DraggableActivityCard from './DraggableActivityCard'
 import CreateActivityModal from './CreateActivityModal'
-import { Plus, Calendar, AlertTriangle } from 'lucide-react'
-import { hasOrderTimeMismatch } from '@/utility/activityTimeOrder'
+import { Plus, Calendar, AlertTriangle, Zap } from 'lucide-react'
+import { hasOrderTimeMismatch, autoFixActivityOrder } from '@/utility/activityTimeOrder'
 import { GradientButton } from '@/components/ui/GradientButton'
+import { toast as sonnerToast, toast } from 'sonner'
 
 interface ActivityListWithDnDProps {
   tripId: string
@@ -31,9 +32,11 @@ export default function ActivityListWithDnD({
 }: ActivityListWithDnDProps) {
   const [activities, setActivities] = useState<IActivity[]>(initialActivities)
   const [showModal, setShowModal] = useState(false)
+  const [showAddBreakModal, setShowAddBreakModal] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [hasWarning, setHasWarning] = useState(false)
+  const [isFixing, setIsFixing] = useState(false)
 
   useEffect(() => {
     setActivities(initialActivities)
@@ -98,6 +101,64 @@ export default function ActivityListWithDnD({
     }
   }
 
+  // Handle auto-fix activity order by sorting by time
+  const handleAutoFixOrder = async () => {
+    setIsFixing(true)
+    try {
+      const fixedActivities = autoFixActivityOrder(activities)
+      setActivities(fixedActivities)
+
+      // Call reorder callback with fixed order
+      if (onReorder) {
+        await onReorder(fixedActivities)
+        sonnerToast.success('Activities reordered by time ✓', {
+          description: 'Your activities are now in chronological order.'
+        })
+      }
+    } catch (error) {
+      sonnerToast.error('Failed to fix activity order', {
+        description: 'Please try again or manually reorder activities.'
+      })
+      console.error('Error fixing activity order:', error)
+    } finally {
+      setIsFixing(false)
+    }
+  }
+
+  // Handle add break/meal activity from warning
+  const handleAddBreakFromWarning = () => {
+    setShowAddBreakModal(true)
+  }
+
+  const handleAddBreakActivity = async (data: any) => {
+    try {
+      // Add activityType as 'Food' for break/meal
+      const breakActivityData = {
+        ...data,
+        activityType: 'Food'
+      }
+      
+      if (onActivityAdd) {
+        await onActivityAdd(breakActivityData)
+        setShowAddBreakModal(false)
+        toast.success('Break/Meal added ✓', {
+          description: 'A food/break activity has been added to your day.'
+        })
+      }
+    } catch (error) {
+      sonnerToast.error('Failed to add break/meal', {
+        description: 'Please try again.'
+      })
+      console.error('Error adding break activity:', error)
+    }
+  }
+
+  // Check if day has any break or food activity
+  const hasBreakOrFood = activities.some(activity => {
+    const type = activity.activityType.toLowerCase()
+    return type === 'food' || type === 'rest' || type === 'break'
+  })
+
   return (
     <div className="w-full">
       {/* Header */}
@@ -118,13 +179,42 @@ export default function ActivityListWithDnD({
 
     
 
-      {/* Time-Order Mismatch Warning */}
+      {/* Time-Order Mismatch Warning with Action */}
       {hasWarning && activities.length > 1 && (
-        <div className="mb-4 flex items-center gap-3 rounded-md border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 shadow-sm">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-          <span>
-            <span className="font-semibold">Time sequence mismatch:</span> Activity order doesn&apos;t match the scheduled time sequence. Review timings to avoid confusion.
-          </span>
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 shadow-sm">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span>
+              <span className="font-semibold">Time sequence mismatch:</span> Activity order doesn&apos;t match the scheduled time sequence.
+            </span>
+          </div>
+          <button
+            onClick={handleAutoFixOrder}
+            disabled={isFixing}
+            className="flex items-center gap-2 whitespace-nowrap rounded bg-yellow-200 hover:bg-yellow-300 disabled:bg-gray-300 px-3 py-1 font-semibold text-yellow-900 transition-colors duration-200"
+          >
+            <Zap className="w-4 h-4" />
+            {isFixing ? 'Fixing...' : 'Auto Fix'}
+          </button>
+        </div>
+      )}
+
+      {/* No Break/Food Warning with Action */}
+      {!hasBreakOrFood && activities.length > 0 && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800 shadow-sm">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span>
+              <span className="font-semibold">No break planned:</span> Consider adding a meal or rest break to your day.
+            </span>
+          </div>
+          <button
+            onClick={handleAddBreakFromWarning}
+            className="flex items-center gap-2 whitespace-nowrap rounded bg-blue-200 hover:bg-blue-300 px-3 py-1 font-semibold text-blue-900 transition-colors duration-200"
+          >
+            <Plus className="w-4 h-4" />
+            Add Break
+          </button>
         </div>
       )}
 
@@ -185,6 +275,13 @@ export default function ActivityListWithDnD({
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleAddActivity}
+      />
+
+      {/* Add Break/Meal Modal */}
+      <CreateActivityModal
+        isOpen={showAddBreakModal}
+        onClose={() => setShowAddBreakModal(false)}
+        onSubmit={handleAddBreakActivity}
       />
     </div>
   )

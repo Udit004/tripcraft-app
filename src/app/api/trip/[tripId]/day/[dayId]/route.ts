@@ -72,7 +72,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
             updatedAt: itineraryDay.updatedAt,
         };
 
-        const activitiesResponse = activities.map(activity => ({
+        // Sort activities based on the order stored in activitiesId
+        const activitiesIdOrder = itineraryDay.activitiesId.map((id: mongoose.Types.ObjectId) => id.toString());
+        const activitiesMap = new Map(
+            activities.map(activity => [activity._id.toString(), activity])
+        );
+        
+        const sortedActivities = activitiesIdOrder
+            .map(id => activitiesMap.get(id))
+            .filter(activity => activity !== undefined);
+
+        const activitiesResponse = sortedActivities.map(activity => ({
             _id: activity._id.toString(),
             itineraryDayId: activity.itineraryDayId.toString(),
             activityType: activity.activityType,

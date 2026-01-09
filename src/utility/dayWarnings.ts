@@ -1,4 +1,5 @@
 import { IActivity } from '@/types/activity';
+import { isMealType, isRestType } from '@/constants/activityTypes';
 
 export type DayWarning = {
   id: string;
@@ -34,10 +35,9 @@ export function analyzeDay(activities: IActivity[]): DayWarning[] {
   }
 
   // 2️⃣ NO BREAK / FOOD / REST WARNING
-  // Check if there's at least one activity with type: food, rest, or break
+  // Check if there's at least one activity that is a meal or rest type
   const hasBreakOrFood = activities.some(activity => {
-    const type = activity.activityType.toLowerCase();
-    return type === 'food' || type === 'rest' || type === 'break';
+    return isMealType(activity.activityType) || isRestType(activity.activityType);
   });
 
   if (!hasBreakOrFood) {

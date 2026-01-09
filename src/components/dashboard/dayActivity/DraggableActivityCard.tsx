@@ -6,6 +6,7 @@ import { GripVertical, Clock, MapPin, Trash2, Edit2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog'
 import EditActivityModal from './EditActivityModal'
+import { getActivityTypeMetadata } from '@/constants/activityTypes'
 
 interface ActivityFormData {
   activityType: string
@@ -58,6 +59,9 @@ export default function DraggableActivityCard({
       setIsDeleting(false)
     }
   }
+
+  // Get activity type metadata
+  const activityTypeMetadata = getActivityTypeMetadata(activity.activityType)
   
   return (
     <div 
@@ -75,13 +79,20 @@ export default function DraggableActivityCard({
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-semibold">
                 {index + 1}
               </span>
               <h4 className="font-semibold text-gray-900 truncate">
                 {activity.title}
               </h4>
+              {/* Activity Type Badge */}
+              {activityTypeMetadata && (
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${activityTypeMetadata.colorClass}`}>
+                  <span>{activityTypeMetadata.emoji}</span>
+                  <span>{activityTypeMetadata.label}</span>
+                </span>
+              )}
             </div>
           </div>
 

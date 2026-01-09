@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import { ActivityType } from "@/constants/activityTypes";
 
 export interface IActivity {
     _id: mongoose.Types.ObjectId | string;
     itineraryDayId: mongoose.Types.ObjectId | string;
-    activityType: string;
+    activityType: ActivityType | string; // Allow string for backwards compatibility
     title: string;
     description: string;
     location: string;
@@ -20,7 +21,7 @@ export interface IActivityId {
 
 export interface ICreateActivityRequest {
     itineraryDayId: mongoose.Types.ObjectId | string;
-    activityType: string;
+    activityType: ActivityType | string; // Allow string for backwards compatibility
     title: string;
     description: string;
     location: string;
@@ -31,7 +32,7 @@ export interface ICreateActivityRequest {
 export interface IActivityResponse {
     _id: mongoose.Types.ObjectId | string;
     itineraryDayId: mongoose.Types.ObjectId | string;
-    activityType: string;
+    activityType: ActivityType | string; // Allow string for backwards compatibility
     title: string;
     description: string;
     location: string;

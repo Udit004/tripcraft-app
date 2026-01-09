@@ -4,6 +4,7 @@ import Activity from "@/models/Activity";
 import { IActivityApiResponse, ICreateActivityRequest, IActivityResponse } from "@/types/activity";
 import { checkAuthentication } from "@/lib/verifyUser";
 import ItineraryDayModel from "@/models/ItineraryDay";
+import { VALID_ACTIVITY_TYPES } from "@/constants/activityTypes";
 
 // Create a new activity for a specific itinerary day
 export async function POST(req: Request, { params }: { params: { tripId: string; dayId: string } }) {
@@ -23,12 +24,24 @@ export async function POST(req: Request, { params }: { params: { tripId: string;
         const body: ICreateActivityRequest = await req.json();
         const { tripId, dayId } = await params;
         const { activityType, title, description, location, startTime, endTime } = body;
+        
         // Validation
         if (!activityType || !title || !startTime || !endTime) {
             return NextResponse.json(
                 {
                     success: false,
                     message: 'Please provide activityType, title, startTime, and endTime',
+                } as IActivityApiResponse,
+                { status: 400 }
+            );
+        }
+
+        // Validate activity type
+        if (!VALID_ACTIVITY_TYPES.includes(activityType)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: `Invalid activity type. Must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}`,
                 } as IActivityApiResponse,
                 { status: 400 }
             );
@@ -103,8 +116,32 @@ export async function GET(req: Request, { params }: { params: { tripId: string; 
     try {
         await connectDB();
         const { tripId, dayId } = await params;
+        
+        // Get the itinerary day to access the ordered activitiesId array
+        const itineraryDay = await ItineraryDayModel.findById(dayId);
+        if (!itineraryDay) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Itinerary day not found',
+                } as IActivityApiResponse,
+                { status: 404 }
+            );
+        }
+        
         const activities = await Activity.find({ itineraryDayId: dayId });
-        const activitiesResponse: IActivityResponse[] = activities.map((activity) => ({
+        
+        // Sort activities based on the order stored in activitiesId
+        const activitiesIdOrder = itineraryDay.activitiesId.map((id: any) => id.toString());
+        const activitiesMap = new Map(
+            activities.map(activity => [activity._id.toString(), activity])
+        );
+        
+        const sortedActivities = activitiesIdOrder
+            .map(id => activitiesMap.get(id))
+            .filter(activity => activity !== undefined);
+        
+        const activitiesResponse: IActivityResponse[] = sortedActivities.map((activity) => ({
             _id: activity._id.toString(),
             itineraryDayId: activity.itineraryDayId.toString(),
             activityType: activity.activityType,    

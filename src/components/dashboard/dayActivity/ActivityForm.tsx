@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import { ACTIVITY_TYPE_GROUPS, ACTIVITY_TYPE_METADATA } from '@/constants/activityTypes'
 
 interface ActivityFormData {
   activityType: string
@@ -63,10 +64,65 @@ export default function ActivityForm({
             onChange={onInputChange}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
           >
-            <option value="sightseeing">🗺️ Sightseeing</option>
-            <option value="dining">🍽️ Dining</option>
-            <option value="transportation">🚗 Transportation</option>
-            <option value="accommodation">🏨 Accommodation</option>
+            {/* Meals & Food */}
+            <optgroup label="🍽️ Meals & Food">
+              {ACTIVITY_TYPE_GROUPS.meals.types.map((type) => {
+                const metadata = ACTIVITY_TYPE_METADATA[type];
+                return (
+                  <option key={type} value={type}>
+                    {metadata.emoji} {metadata.label}
+                  </option>
+                );
+              })}
+            </optgroup>
+
+            {/* Rest & Breaks */}
+            <optgroup label="☕ Rest & Breaks">
+              {ACTIVITY_TYPE_GROUPS.rest.types.map((type) => {
+                const metadata = ACTIVITY_TYPE_METADATA[type];
+                return (
+                  <option key={type} value={type}>
+                    {metadata.emoji} {metadata.label}
+                  </option>
+                );
+              })}
+            </optgroup>
+
+            {/* Activities */}
+            <optgroup label="🎯 Activities">
+              {ACTIVITY_TYPE_GROUPS.activities.types.map((type) => {
+                const metadata = ACTIVITY_TYPE_METADATA[type];
+                return (
+                  <option key={type} value={type}>
+                    {metadata.emoji} {metadata.label}
+                  </option>
+                );
+              })}
+            </optgroup>
+
+            {/* Logistics */}
+            <optgroup label="🚀 Logistics">
+              {ACTIVITY_TYPE_GROUPS.logistics.types.map((type) => {
+                const metadata = ACTIVITY_TYPE_METADATA[type];
+                return (
+                  <option key={type} value={type}>
+                    {metadata.emoji} {metadata.label}
+                  </option>
+                );
+              })}
+            </optgroup>
+
+            {/* Other */}
+            <optgroup label="📋 Other">
+              {ACTIVITY_TYPE_GROUPS.other.types.map((type) => {
+                const metadata = ACTIVITY_TYPE_METADATA[type];
+                return (
+                  <option key={type} value={type}>
+                    {metadata.emoji} {metadata.label}
+                  </option>
+                );
+              })}
+            </optgroup>
           </select>
         </div>
 
