@@ -27,18 +27,18 @@ const ModalWrapper = React.memo(({ children, onClose }: ModalWrapperProps) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
-        className="relative max-w-xl w-full my-8 animate-in zoom-in-95 duration-200"
+        className="relative max-w-xl w-full mt-40 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
         
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 p-2 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer"
+          className="absolute top-12 right-6 p-2 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer"
           style={{ 
             backgroundColor: colors.surface,
             color: colors.textMuted
