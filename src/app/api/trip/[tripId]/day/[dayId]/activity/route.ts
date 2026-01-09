@@ -7,7 +7,7 @@ import ItineraryDayModel from "@/models/ItineraryDay";
 import { VALID_ACTIVITY_TYPES } from "@/constants/activityTypes";
 
 // Create a new activity for a specific itinerary day
-export async function POST(req: Request, { params }: { params: { tripId: string; dayId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
         return NextResponse.json(
@@ -101,7 +101,7 @@ export async function POST(req: Request, { params }: { params: { tripId: string;
 
 
 // Get all activities for a specific itinerary day
-export async function GET(req: Request, { params }: { params: { tripId: string; dayId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
         return NextResponse.json(
