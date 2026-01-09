@@ -2,7 +2,7 @@
 "use client";
 import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { IActivity } from '@/types/activity';
+import { IActivity, IActivityApiResponse, IActivityResponse, ICreateActivityRequest } from '@/types/activity';
 import { IItineraryDay } from '@/types/itineraryDay';
 import { getItineraryDayById, addActivityToItineraryDay, deleteActivity, updateActivity, updateActivityOrder, updateItineraryDay, deleteItineraryDay } from '@/services/tripService';
 import { LoadingState } from '@/components/dashboard/dayActivity/LoadingState';
@@ -120,10 +120,34 @@ export default function ItineraryPage({
     }
   };
 
-  const handleEditActivity = (activity: IActivity) => {
-    // TODO: Implement edit functionality
-    console.log('Edit activity:', activity);
+const handleEditActivity = async (activityId: string, activityData: any) => {
+    try {
+      // Convert time strings to Date objects if provided, otherwise exclude them
+      const formattedData: any = {  
+        activityType: activityData.activityType,
+        title: activityData.title,
+        description: activityData.description,
+        location: activityData.location,
+      };  
+      // Only include time fields if they have values
+      if (activityData.startTime) {
+        formattedData.startTime = new Date(`2000-01-01T${activityData.startTime}`);
+      }
+      if (activityData.endTime) {
+        formattedData.endTime = new Date(`2000-01-01T${activityData.endTime}`);
+      }
+      await updateActivity(tripSlug, daySlug, activityId, formattedData);
+      toast.success('Activity updated successfully!');
+      // Refresh the data
+      await fetchItineraryDayById();
+    }
+    catch (error) {
+      console.error('Error updating activity:', error);
+      toast.error('Failed to update activity. Please try again.');
+      throw error;
+    }
   };
+  
 
   const handleUpdateActivity = async (activityId: string, activityData: any) => {
     try {

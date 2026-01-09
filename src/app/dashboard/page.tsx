@@ -2,15 +2,18 @@
 import ProtectRoutes from '@/components/ProtectRoutes';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getTrips, updateTrip, deleteTrip, undoDeletion } from '@/services/tripService';
+import { getTrips, updateTrip, deleteTrip } from '@/services/tripService';
 import { ITripResponse, ICreateTripRequest } from '@/types/trip';
-import { Button } from '@/components/ui/button';
-import { Plus, AlertCircle, Loader2 } from 'lucide-react';
 import CreateTripModal from '@/components/dashboard/trip/CreateTripModal';
 import EditTripModal from '@/components/dashboard/trip/EditTripModal';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
-import TripCard from '@/components/dashboard/trip/TripCard';
+import DashboardHeader from '@/components/dashboard/trip/DashboardHeader';
+import DashboardStats from '@/components/dashboard/trip/DashboardStats';
+import TripGrid from '@/components/dashboard/trip/TripGrid';
 import EmptyState from '@/components/dashboard/trip/EmptyState';
+import ErrorAlert from '@/components/dashboard/trip/ErrorAlert';
+import LoadingState from '@/components/dashboard/trip/LoadingState';
+import ModalWrapper from '@/components/dashboard/trip/ModalWrapper';
 import { colors } from '@/constants/colors';
 import mongoose from 'mongoose';
 import { toast } from '@/lib/toast';
@@ -29,7 +32,7 @@ export default function Dashboard() {
   const [deletingTrip, setDeletingTrip] = useState<ITripResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchTrips = async () => {
+  const fetchTrips = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -44,24 +47,24 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTrips();
-  }, []);
+  }, [fetchTrips]);
 
-  const handleTripView = (tripId: mongoose.Types.ObjectId) => {
+  const handleTripView = useCallback((tripId: mongoose.Types.ObjectId) => {
     if (tripId) {
       router.push(`/dashboard/${tripId}`);
     }
-  };
+  }, [router]);
 
-  const handleEditTrip = (trip: ITripResponse) => {
+  const handleEditTrip = useCallback((trip: ITripResponse) => {
     setSelectedTrip(trip);
     setOpenEditModal(true);
-  };
+  }, []);
 
-  const handleUpdateTrip = async (tripId: string, tripData: ICreateTripRequest) => {
+  const handleUpdateTrip = useCallback(async (tripId: string, tripData: ICreateTripRequest) => {
     try {
       const result = await updateTrip(tripId, tripData);
       setOpenEditModal(false);
@@ -73,12 +76,12 @@ export default function Dashboard() {
       toast.error('Failed to update trip. Please try again.');
       throw error;
     }
-  };
+  }, [fetchTrips]);
 
-  const handleDeleteTrip = (trip: ITripResponse) => {
+  const handleDeleteTrip = useCallback((trip: ITripResponse) => {
     setDeletingTrip(trip);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deletingTrip) return;
@@ -88,10 +91,8 @@ export default function Dashboard() {
       const result = await deleteTrip(deletingTrip._id!);
 
       if (result && result.success) {
-        // Remove from UI immediately (optimistic update)
         setTrips(prevTrips => prevTrips.filter(trip => trip._id !== deletingTrip._id));
 
-        // Show undo toast with proper callback
         sonnerToast.custom(
           (id) => (
             <UndoToast
@@ -124,163 +125,69 @@ export default function Dashboard() {
     } finally {
       setIsDeleting(false);
     }
-  }, [deletingTrip]);
+  }, [deletingTrip, fetchTrips]);
+
+  const handleCloseCreateModal = useCallback(() => setOpenCreateModal(false), []);
+  const handleCloseEditModal = useCallback(() => setOpenEditModal(false), []);
+  const handleOpenCreateModal = useCallback(() => setOpenCreateModal(true), []);
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteConfirm(false);
+    setDeletingTrip(null);
+  }, []);
 
   return (
     <ProtectRoutes>
-      <div
-        className="min-h-screen py-8 px-4"
-        style={{ backgroundColor: colors.background }}
-      >
+      <div className="min-h-screen py-8 px-4" style={{ backgroundColor: colors.background }}>
         <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
-          <header className="mb-12">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div>
-                <h1
-                  className="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
-                  }}
-                >
-                  My Trips
-                </h1>
-                <p style={{ color: colors.textMuted }} className="text-lg">
-                  Plan, organize, and track all your adventures in one place
-                </p>
-              </div>
+          {/* Header */}
+          <DashboardHeader onCreateTrip={handleOpenCreateModal} />
 
-              <Button
-                onClick={() => setOpenCreateModal(true)}
-                size="lg"
-                className="gap-2 px-6 py-6 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap cursor-pointer"
-                style={{
-                  backgroundColor: colors.primary,
-                  color: colors.surface
-                }}
-              >
-                <Plus size={20} />
-                New Trip
-              </Button>
-            </div>
+          {/* Stats */}
+          {!loading && trips.length > 0 && <DashboardStats trips={trips} />}
 
-            {/* Stats Bar */}
-            {!loading && trips.length > 0 && (
-              <div
-                className="mt-8 p-6 rounded-xl"
-                style={{ backgroundColor: colors.surface }}
-              >
-                <div className="flex flex-wrap gap-8">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
-                      Total Trips
-                    </p>
-                    <p className="text-3xl font-bold" style={{ color: colors.primary }}>
-                      {trips.length}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
-                      Destinations
-                    </p>
-                    <p className="text-3xl font-bold" style={{ color: colors.secondary }}>
-                      {new Set(trips.map(t => t.destination)).size}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </header>
+          {/* Error */}
+          {error && <ErrorAlert message={error} />}
 
-          {/* Error Alert */}
-          {error && (
-            <div
-              className="mb-6 p-4 rounded-lg flex items-start gap-3"
-              style={{
-                backgroundColor: '#FEE2E2',
-                borderLeft: `4px solid #DC2626`
-              }}
-            >
-              <AlertCircle size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-red-800">Error</p>
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Content Area */}
+          {/* Content */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24">
-              <Loader2
-                size={48}
-                className="animate-spin mb-4"
-                style={{ color: colors.primary }}
-              />
-              <p style={{ color: colors.textMuted }}>Loading your trips...</p>
-            </div>
+            <LoadingState />
           ) : trips.length === 0 ? (
-            <EmptyState onCreateTrip={() => setOpenCreateModal(true)} />
+            <EmptyState onCreateTrip={handleOpenCreateModal} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trips.map((trip) => (
-                <TripCard
-                  key={trip._id}
-                  trip={trip}
-                  onEdit={handleEditTrip}
-                  onDelete={handleDeleteTrip}
-                  onView={handleTripView}
-                />
-              ))}
-            </div>
+            <TripGrid
+              trips={trips}
+              onEdit={handleEditTrip}
+              onDelete={handleDeleteTrip}
+              onView={handleTripView}
+            />
           )}
         </div>
 
-        {/* Modals */}
+        {/* Create Modal */}
         {openCreateModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="relative max-w-xl w-full mt-60">
-              <CreateTripModal />
-              <button
-                onClick={() => setOpenCreateModal(false)}
-                className="absolute top-8 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-50 cursor-pointer"
-                style={{ backgroundColor: colors.surface }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <ModalWrapper onClose={handleCloseCreateModal}>
+            <CreateTripModal />
+          </ModalWrapper>
         )}
 
+        {/* Edit Modal */}
         {openEditModal && selectedTrip && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-25 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="relative max-w-xl w-full mt-60">
-              <EditTripModal
-                tripId={selectedTrip._id!}
-                initialTripData={{
-                  tripName: selectedTrip.tripName,
-                  tripDescription: selectedTrip.tripDescription,
-                  destination: selectedTrip.destination,
-                  startDate: new Date(selectedTrip.startDate),
-                  endDate: new Date(selectedTrip.endDate),
-                }}
-                onUpdateTrip={handleUpdateTrip}
-              />
-              <button
-                onClick={() => setOpenEditModal(false)}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-50 cursor-pointer"
-                style={{ backgroundColor: colors.surface }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <ModalWrapper onClose={handleCloseEditModal}>
+            <EditTripModal
+              tripId={selectedTrip._id!}
+              initialTripData={{
+                tripName: selectedTrip.tripName,
+                tripDescription: selectedTrip.tripDescription,
+                destination: selectedTrip.destination,
+                startDate: new Date(selectedTrip.startDate),
+                endDate: new Date(selectedTrip.endDate),
+              }}
+              onUpdateTrip={handleUpdateTrip}
+            />
+          </ModalWrapper>
         )}
 
+        {/* Delete Dialog */}
         <DeleteConfirmDialog
           isOpen={showDeleteConfirm}
           isLoading={isDeleting}
@@ -288,10 +195,7 @@ export default function Dashboard() {
           message="Are you sure you want to delete this trip? You will have 10 seconds to undo this action."
           itemName={deletingTrip?.tripName}
           onConfirm={handleConfirmDelete}
-          onCancel={() => {
-            setShowDeleteConfirm(false);
-            setDeletingTrip(null);
-          }}
+          onCancel={handleCancelDelete}
           confirmText="Delete Trip"
           cancelText="Cancel"
         />
