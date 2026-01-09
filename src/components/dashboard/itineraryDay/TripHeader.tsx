@@ -108,6 +108,12 @@ export default function TripHeader({ trip }: TripHeaderProps) {
     setError(null);
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget) {
+        setOpenEditModal(false);
+      }
+    };
+
   return (
     <>
       <Card 
@@ -283,7 +289,9 @@ export default function TripHeader({ trip }: TripHeaderProps) {
 
       {/* Edit Trip Modal */}
       {openEditModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+        <div 
+        onClick={(e) => handleBackdropClick(e)}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-8">
             <EditTripModal
               tripId={trip._id!}
@@ -298,7 +306,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
             />
             <button
               onClick={() => setOpenEditModal(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1 shadow-lg transition-colors"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50 bg-white rounded-full p-1 shadow-lg transition-colors cursor-pointer"
               aria-label="Close modal"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

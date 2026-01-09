@@ -67,6 +67,13 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
     setDeletingDay(day)
   }
 
+  const handleblackDrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      setOpenModal(false)
+      setEditingDay(null)
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
       {/* Section header */}
@@ -121,7 +128,9 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
 
       {/* Create Itinerary Day Modal */}
       {openModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+        <div 
+        onClick={() => handleblackDrop(e)}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-40">
             <CreateItinerayDayModal
               tripId={tripSlug}
@@ -149,7 +158,9 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
 
       {/* Edit Itinerary Day Modal */}
       {editingDay && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+        <div
+          onClick={(e) => handleblackDrop(e)}
+         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-4">
             <EditItineraryDayModal
               dayId={editingDay._id}
