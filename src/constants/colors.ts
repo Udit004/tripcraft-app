@@ -10,6 +10,32 @@ export const colors = {
   textMuted: '#475569',    // Medium gray
 } as const;
 
+export const buttonGradients = {
+  primary: {
+    from: '#1E3A8A',       // Deep Indigo
+    to: '#0EA5A4',         // Teal
+    hover: {
+      from: '#1E40AF',     // Lighter Indigo
+      to: '#0D9488',       // Darker Teal
+    }
+  },
+  cta: {
+    from: '#F59E0B',       // Amber
+    to: '#D97706',         // Darker Amber
+    hover: {
+      from: '#D97706',     // Darker Amber
+      to: '#B45309',       // Even Darker Amber
+    }
+  },
+  secondary: {
+    from: '#3B82F6',       // Blue
+    to: '#0EA5A4',         // Teal
+    hover: {
+      from: '#2563EB',     // Darker Blue
+      to: '#0D9488',       // Darker Teal
+    }
+  }
+} as const;
 
 export const activityColors = {
   sightseeing: {
