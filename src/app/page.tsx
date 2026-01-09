@@ -1,87 +1,218 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Footer from '@/components/Footer';
+import { GradientLink } from '@/components/ui/GradientButton';
+import { MapPin, Calendar, Shield, TrendingUp, Users, Globe2 } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col"> 
+    <div className="min-h-screen flex flex-col bg-white"> 
       {/* Hero Section */}
-      <section className="gradient-hero text-white py-20 md:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              Craft Your Perfect Journey
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Plan, explore, and discover amazing destinations with TripCraft. 
-              Your adventure starts here.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                href="/signUp"
-                className="px-8 py-4 bg-accent-500 text-white rounded-lg font-semibold text-lg hover:bg-accent-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                Start Planning
-              </Link>
-              <Link
-                href="/explore"
-                className="px-8 py-4 bg-white text-primary-600 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-all shadow-lg"
-              >
-                Explore Destinations
-              </Link>
+      <section className="relative bg-gradient-to-br from-[#1E3A8A] via-[#1E40AF] to-[#0EA5A4] overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMi4yMS0xLjc5IDQtNCA0cy00LTEuNzktNC00IDEuNzktNCA0LTQgNCAxLjc5IDQgNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Plan Smarter.<br />Travel Better.
+              </h1>
+              <p className="text-lg sm:text-xl text-blue-100 mb-10 leading-relaxed max-w-2xl">
+                Transform the way you plan trips. Organize itineraries, track expenses, 
+                and discover destinations—all in one intuitive platform.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <GradientLink
+                  variant="cta"
+                  size="lg"
+                  href="/signUp"
+                >
+                  Get Started Free
+                </GradientLink>
+                <GradientLink
+                  variant="ghost"
+                  size="lg"
+                  href="/dashboard"
+                >
+                  View Demo
+                </GradientLink>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-8 mt-20 pt-12 border-t border-white/20">
+                <div>
+                  <div className="text-3xl font-bold text-white mb-1">10K+</div>
+                  <div className="text-sm text-blue-100">Active Users</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-white mb-1">50K+</div>
+                  <div className="text-sm text-blue-100">Trips Planned</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-white mb-1">120+</div>
+                  <div className="text-sm text-blue-100">Countries</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Image */}
+            <div className="hidden lg:flex items-center justify-center">
+              <div className="relative w-full min-h-[500px]">
+                <Image
+                  src="/images/homePage/HeroImage.png"
+                  alt="World map with travel routes and destinations"
+                  width={800}
+                  height={400}
+                  className="object-contain rounded-2xl shadow-sm drop-shadow-2xl"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 lg:py-28 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Why Choose TripCraft?
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#0F172A] mb-4">
+              Everything you need for seamless travel planning
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Everything you need to plan the perfect trip, all in one place
+            <p className="text-lg text-[#475569]">
+              Built for travelers who want control, clarity, and convenience.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="p-8 rounded-xl border border-gray-200 hover:border-primary-600 transition-all hover:shadow-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#1E3A8A] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#1E3A8A]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#1E3A8A] transition-colors">
+                <Calendar className="w-6 h-6 text-[#1E3A8A] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Smart Planning</h3>
-              <p className="text-slate-600">
-                Create detailed itineraries with AI-powered suggestions tailored to your preferences.
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Day-by-Day Itineraries
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Build detailed schedules with activities, locations, and notes. Keep everything organized in one place.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="p-8 rounded-xl border border-gray-200 hover:border-secondary-500 transition-all hover:shadow-lg">
-              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#0EA5A4] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#0EA5A4]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#0EA5A4] transition-colors">
+                <MapPin className="w-6 h-6 text-[#0EA5A4] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Explore Worldwide</h3>
-              <p className="text-slate-600">
-                Discover hidden gems and popular destinations across the globe with our travel guides.
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Destination Explorer
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Browse curated travel guides and discover hidden gems in destinations worldwide.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="p-8 rounded-xl border border-gray-200 hover:border-accent-500 transition-all hover:shadow-lg">
-              <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#F59E0B] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#F59E0B] transition-colors">
+                <TrendingUp className="w-6 h-6 text-[#F59E0B] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Budget Tracker</h3>
-              <p className="text-slate-600">
-                Keep track of your expenses and stay within budget with our easy-to-use tools.
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Budget Management
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Track expenses in real-time and stay on budget with intuitive financial tools.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#1E3A8A] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#1E3A8A]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#1E3A8A] transition-colors">
+                <Shield className="w-6 h-6 text-[#1E3A8A] group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Secure & Private
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Your travel plans are encrypted and protected. Only you have access to your data.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#0EA5A4] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#0EA5A4]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#0EA5A4] transition-colors">
+                <Users className="w-6 h-6 text-[#0EA5A4] group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Collaborative Planning
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Plan group trips together. Share itineraries and coordinate seamlessly with travel companions.
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="bg-white p-8 rounded-xl border border-[#E5E7EB] hover:border-[#F59E0B] transition-all duration-200 group">
+              <div className="w-12 h-12 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#F59E0B] transition-colors">
+                <Globe2 className="w-6 h-6 text-[#F59E0B] group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Offline Access
+              </h3>
+              <p className="text-[#475569] leading-relaxed">
+                Access your itineraries anywhere, anytime—even without an internet connection.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#0F172A] mb-4">
+              Simple. Powerful. Effective.
+            </h2>
+            <p className="text-lg text-[#475569]">
+              Start planning your perfect trip in three easy steps
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1E3A8A] text-white font-bold text-2xl mb-6">
+                1
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Create Your Trip
+              </h3>
+              <p className="text-[#475569]">
+                Set your destination, dates, and basic preferences to get started.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0EA5A4] text-white font-bold text-2xl mb-6">
+                2
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Build Your Itinerary
+              </h3>
+              <p className="text-[#475569]">
+                Add activities, accommodations, and transportation to each day of your trip.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F59E0B] text-white font-bold text-2xl mb-6">
+                3
+              </div>
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-3">
+                Travel with Confidence
+              </h3>
+              <p className="text-[#475569]">
+                Access your plans on-the-go and make the most of every moment.
               </p>
             </div>
           </div>
@@ -89,23 +220,28 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 lg:py-28 bg-gradient-to-br from-[#1E3A8A] to-[#0EA5A4]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Ready to Start Your Adventure?
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Ready to plan your next adventure?
           </h2>
-          <p className="text-lg text-slate-600 mb-8">
-            Join thousands of travelers who trust TripCraft for their journey planning
+          <p className="text-lg text-blue-100 mb-10 max-w-2xl mx-auto">
+            Join thousands of travelers who trust TripCraft to bring their travel dreams to life.
           </p>
-          <Link
+          <GradientLink
+            variant="cta"
+            size="lg"
             href="/signUp"
-            className="inline-block px-8 py-4 gradient-primary text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            Get Started for Free
-          </Link>
+            Start Planning for Free
+          </GradientLink>
+          <p className="text-sm text-blue-100 mt-4">
+            No credit card required · Free forever
+          </p>
         </div>
       </section>
-      <Footer/>
+
+      <Footer />
     </div>
   );
 }
