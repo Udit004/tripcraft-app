@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'this-is-a-tripcraft-default-secret';
+const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || 'this-is-a-tripcraft-default-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 console.log('JWT_SECRET loaded:', JWT_SECRET ? '✓ Set' : '✗ Not set (using default)');
@@ -12,9 +12,9 @@ export interface JWTPayload {
 }
 
 export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_SECRET as any, {
     expiresIn: JWT_EXPIRES_IN,
-  });
+  } as any);
 };
 
 export const verifyToken = (token: string): JWTPayload | null => {

@@ -21,7 +21,7 @@ export const useItineraryDelete = (tripSlug: string): UseItineraryDeleteReturn =
 
     try {
       setIsDeleting(true)
-      const result = await deleteItineraryDay(tripSlug, deletingDay._id)
+      const result = await deleteItineraryDay(tripSlug, deletingDay._id?.toString()!)
 
       if (result.success) {
         setDeletingDay(null)

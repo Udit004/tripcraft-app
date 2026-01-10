@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
             endDate: trip.endDate,
             createdAt: trip.createdAt,
             updatedAt: trip.updatedAt,
-        }));
+        } as ITripResponse));
         
         return NextResponse.json(
             {

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Activity from "@/models/Activity";
 import { IActivityApiResponse, ICreateActivityRequest, IActivityResponse } from "@/types/activity";
@@ -7,7 +7,7 @@ import ItineraryDayModel from "@/models/ItineraryDay";
 import { VALID_ACTIVITY_TYPES } from "@/constants/activityTypes";
 
 // Create a new activity for a specific itinerary day
-export async function POST(req: Request, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
         return NextResponse.json(
@@ -37,7 +37,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ tripId:
         }
 
         // Validate activity type
-        if (!VALID_ACTIVITY_TYPES.includes(activityType)) {
+        if (!VALID_ACTIVITY_TYPES.includes(activityType as any)) {
             return NextResponse.json(
                 {
                     success: false,
@@ -50,7 +50,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ tripId:
         // Create new activity
         const newActivity = await Activity.create({
             itineraryDayId: dayId,
-            activityType,
+            activityType: activityType as any,
             title,
             description,
             location,
@@ -101,7 +101,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ tripId:
 
 
 // Get all activities for a specific itinerary day
-export async function GET(req: Request, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ tripId: string; dayId: string }> }) {
     const { isAuthenticated, user, error } = await checkAuthentication(req);
     if (!isAuthenticated) {
         return NextResponse.json(
@@ -138,10 +138,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ tripId: 
         );
         
         const sortedActivities = activitiesIdOrder
-            .map(id => activitiesMap.get(id))
-            .filter(activity => activity !== undefined);
+            .map((id: string) => activitiesMap.get(id))
+            .filter((activity: any) => activity !== undefined);
         
-        const activitiesResponse: IActivityResponse[] = sortedActivities.map((activity) => ({
+        const activitiesResponse: IActivityResponse[] = sortedActivities.map((activity: any) => ({
             _id: activity._id.toString(),
             itineraryDayId: activity.itineraryDayId.toString(),
             activityType: activity.activityType,    

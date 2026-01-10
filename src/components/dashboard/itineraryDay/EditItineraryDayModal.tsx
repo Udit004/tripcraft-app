@@ -28,7 +28,7 @@ export default function EditItineraryDayModal({
         dayNumber: initialDayData.dayNumber,
         dayName: initialDayData.dayName,
         date: new Date(initialDayData.date),
-        activitiesId: initialDayData.activitiesId || [],
+        activitiesId: initialDayData.activitiesId?.map((id: any) => id.toString() || id._id?.toString()) || [],
     })
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
@@ -39,7 +39,7 @@ export default function EditItineraryDayModal({
             dayNumber: initialDayData.dayNumber,
             dayName: initialDayData.dayName,
             date: new Date(initialDayData.date),
-            activitiesId: initialDayData.activitiesId || [],
+            activitiesId: initialDayData.activitiesId?.map((id: any) => id.toString() || id._id?.toString()) || [],
         })
     }, [initialDayData, tripId])
 

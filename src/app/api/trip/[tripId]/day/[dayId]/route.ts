@@ -79,10 +79,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
         );
         
         const sortedActivities = activitiesIdOrder
-            .map(id => activitiesMap.get(id))
-            .filter(activity => activity !== undefined);
+            .map((id: string) => activitiesMap.get(id))
+            .filter((activity: any) => activity !== undefined);
 
-        const activitiesResponse = sortedActivities.map(activity => ({
+        const activitiesResponse = sortedActivities.map((activity: any) => ({
             _id: activity._id.toString(),
             itineraryDayId: activity.itineraryDayId.toString(),
             activityType: activity.activityType,

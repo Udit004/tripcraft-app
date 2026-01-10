@@ -271,13 +271,13 @@ export const ACTIVITY_TYPE_GROUPS = {
 
 // Helper to check if an activity type is a meal
 export function isMealType(activityType: string): boolean {
-  const mealTypes = ACTIVITY_TYPE_GROUPS.meals.types;
+  const mealTypes = ACTIVITY_TYPE_GROUPS.meals.types as readonly ActivityType[];
   return mealTypes.includes(activityType as ActivityType);
 }
 
 // Helper to check if an activity type is a rest/break
 export function isRestType(activityType: string): boolean {
-  const restTypes = ACTIVITY_TYPE_GROUPS.rest.types;
+  const restTypes = ACTIVITY_TYPE_GROUPS.rest.types as readonly ActivityType[];
   return restTypes.includes(activityType as ActivityType);
 }
 

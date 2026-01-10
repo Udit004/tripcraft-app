@@ -149,6 +149,11 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
     }
   };
 
+  // Adapter function for ActivityListWithDnD component - expects (activity: IActivity) => void
+  const handleEditActivityAdapter = (activity: IActivity) => {
+    handleEditActivity(activity._id?.toString() || '', activity);
+  };
+
 
   const handleUpdateActivity = async (activityId: string, activityData: any) => {
     try {
@@ -308,7 +313,7 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
             dayId={daySlug}
             initialActivities={activityData}
             onActivityAdd={handleAddActivity}
-            onActivityEdit={handleEditActivity}
+            onActivityEdit={handleEditActivityAdapter}
             onActivityUpdate={handleUpdateActivity}
             onActivityDelete={handleDeleteActivity}
             onReorder={handleReorderActivities}

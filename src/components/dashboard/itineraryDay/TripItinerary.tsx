@@ -129,7 +129,7 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
       {/* Create Itinerary Day Modal */}
       {openModal && (
         <div 
-        onClick={() => handleblackDrop(e)}
+        onClick={(e) => handleblackDrop(e)}
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-40">
             <CreateItinerayDayModal
@@ -163,8 +163,8 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-4">
             <EditItineraryDayModal
-              dayId={editingDay._id}
-              tripId={tripSlug}
+              dayId={editingDay._id?.toString()!}
+              tripId={tripSlug.toString()}
               initialDayData={editingDay}
               onUpdateDay={updateItineraryDay}
               onClose={() => setEditingDay(null)}

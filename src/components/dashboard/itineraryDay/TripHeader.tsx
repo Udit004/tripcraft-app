@@ -57,7 +57,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
     setError(null);
     
     try {
-      const result = await deleteTrip(trip._id!);
+      const result = await deleteTrip(trip._id.toString());
       
       if (result && result.success) {
         // Close the delete dialog first
@@ -257,7 +257,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
                     className="text-sm font-semibold mt-0.5"
                     style={{ color: colors.textMain }}
                   >
-                    {formatDate(trip.startDate)}
+                    {formatDate(trip.startDate.toString())}
                   </p>
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
                     className="text-sm font-semibold mt-0.5"
                     style={{ color: colors.textMain }}
                   >
-                    {formatDate(trip.endDate)}
+                    {formatDate(trip.endDate.toString())}
                   </p>
                 </div>
               </div>
@@ -294,7 +294,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-8">
             <EditTripModal
-              tripId={trip._id!}
+              tripId={trip._id?.toString()!}
               initialTripData={{
                 tripName: trip.tripName,
                 tripDescription: trip.tripDescription,

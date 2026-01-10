@@ -88,7 +88,7 @@ export default function Dashboard() {
 
     try {
       setIsDeleting(true);
-      const result = await deleteTrip(deletingTrip._id!);
+      const result = await deleteTrip(deletingTrip._id?.toString()!);
 
       if (result && result.success) {
         setTrips(prevTrips => prevTrips.filter(trip => trip._id !== deletingTrip._id));
@@ -174,7 +174,7 @@ export default function Dashboard() {
         {openEditModal && selectedTrip && (
           <ModalWrapper onClose={handleCloseEditModal}>
             <EditTripModal
-              tripId={selectedTrip._id!}
+              tripId={selectedTrip._id?.toString()!}
               initialTripData={{
                 tripName: selectedTrip.tripName,
                 tripDescription: selectedTrip.tripDescription,

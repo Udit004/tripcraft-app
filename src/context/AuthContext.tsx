@@ -2,11 +2,12 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService } from '@/services';
+import { IUserResponse } from '@/types/user';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: any;
+  user: IUserResponse | null;
   login: (userData: any) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
@@ -17,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<IUserResponse | null>(null);
 
   const checkAuth = async () => {
     try {
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await authService.getMe();
         if (data.success) {
           setIsAuthenticated(true);
-          setUser(data.user);
+          setUser(data.user || null);
         } else {
           authService.logout();
           setIsAuthenticated(false);

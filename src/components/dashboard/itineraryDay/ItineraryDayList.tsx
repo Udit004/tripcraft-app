@@ -29,7 +29,7 @@ export const ItineraryDayList: React.FC<ItineraryDayListProps> = ({
       const exceedsDuration = checkExceedsDuration(day.dayNumber)
       return (
         <ItineraryDayCard
-          key={day._id}
+          key={day._id?.toString()}
           day={day}
           index={index}
           onClick={onDayClick}
