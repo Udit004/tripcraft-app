@@ -2,14 +2,29 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Menu, X } from 'lucide-react';
+import { colors, buttonGradients } from '@/constants/colors';
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Helper function to check if a route is active
+  const isActive = (href: string) => pathname === href;
+
+  // Helper function to get active link styles
+  const getNavLinkStyles = (href: string) => {
+    const isCurrentPage = isActive(href);
+    return {
+      color: isCurrentPage ? colors.primary : colors.textMuted,
+      borderBottom: isCurrentPage ? `3px solid ${colors.primary}` : 'none',
+      paddingBottom: '8px',
+    };
+  };
 
   const handleLogout = () => {
     logout();
@@ -35,21 +50,24 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             <Link 
               href="/about" 
-              className="text-[#475569] hover:text-[#1E3A8A] font-medium transition-colors"
+              className="font-medium transition-colors"
+              style={getNavLinkStyles('/about')}
             >
               About
             </Link>
             <Link 
               href="/dashboard" 
-              className="text-[#475569] hover:text-[#1E3A8A] font-medium transition-colors"
+              className="font-medium transition-colors"
+              style={getNavLinkStyles('/dashboard')}
             >
               My Trips
             </Link>
             <Link 
-              href="/contact" 
-              className="text-[#475569] hover:text-[#1E3A8A] font-medium transition-colors"
+              href="/explore" 
+              className="font-medium transition-colors"
+              style={getNavLinkStyles('/explore')}
             >
-              Contact
+              Explore
             </Link>
           </div>
 
@@ -105,24 +123,36 @@ export default function Navbar() {
             <div className="flex flex-col gap-1">
               <Link 
                 href="/about" 
-                className="text-[#475569] hover:text-[#1E3A8A] hover:bg-[#F8FAFC] font-medium py-3 px-3 rounded-lg transition-colors"
+                className="font-medium py-3 px-3 rounded-lg transition-colors"
+                style={{
+                  color: isActive('/about') ? colors.primary : colors.textMuted,
+                  backgroundColor: isActive('/about') ? colors.background : 'transparent',
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 About
               </Link>
               <Link 
                 href="/dashboard" 
-                className="text-[#475569] hover:text-[#1E3A8A] hover:bg-[#F8FAFC] font-medium py-3 px-3 rounded-lg transition-colors"
+                className="font-medium py-3 px-3 rounded-lg transition-colors"
+                style={{
+                  color: isActive('/dashboard') ? colors.primary : colors.textMuted,
+                  backgroundColor: isActive('/dashboard') ? colors.background : 'transparent',
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 My Trips
               </Link>
               <Link 
-                href="/contact" 
-                className="text-[#475569] hover:text-[#1E3A8A] hover:bg-[#F8FAFC] font-medium py-3 px-3 rounded-lg transition-colors"
+                href="/explore" 
+                className="font-medium py-3 px-3 rounded-lg transition-colors"
+                style={{
+                  color: isActive('/explore') ? colors.primary : colors.textMuted,
+                  backgroundColor: isActive('/explore') ? colors.background : 'transparent',
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Contact
+                Explore
               </Link>
               
               <div className="border-t border-[#E5E7EB] my-2"></div>
