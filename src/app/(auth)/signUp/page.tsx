@@ -9,7 +9,7 @@ import { toast } from '@/lib/toast';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -18,6 +18,12 @@ export default function SignUpPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+
+  if (isAuthenticated) {
+    router.push('/dashboard');
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

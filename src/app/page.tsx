@@ -1,16 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/context/AuthContext'; // Adjust the import based on your project structure
 import { GradientLink } from '@/components/ui/GradientButton';
 import { MapPin, Calendar, Shield, TrendingUp, Users, Globe2 } from 'lucide-react';
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+
+
   return (
-    <div className="min-h-screen flex flex-col bg-white"> 
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-[#1E3A8A] via-[#1E40AF] to-[#0EA5A4] overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMi4yMS0xLjc5IDQtNCA0cy00LTEuNzktNC00IDEuNzktNCA0LTQgNCAxLjc5IDQgNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -19,24 +25,27 @@ export default function Home() {
                 Plan Smarter.<br />Travel Better.
               </h1>
               <p className="text-lg sm:text-xl text-blue-100 mb-10 leading-relaxed max-w-2xl">
-                Transform the way you plan trips. Organize itineraries, track expenses, 
+                Transform the way you plan trips. Organize itineraries, track expenses,
                 and discover destinations—all in one intuitive platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <GradientLink
-                  variant="cta"
-                  size="lg"
-                  href="/signUp"
-                >
-                  Get Started Free
-                </GradientLink>
-                <GradientLink
-                  variant="ghost"
-                  size="lg"
-                  href="/dashboard"
-                >
-                  View Demo
-                </GradientLink>
+                {isAuthenticated ? (
+                  <GradientLink
+                    variant="cta"
+                    size="lg"
+                    href="/dashboard"
+                  >
+                    MyTrip
+                  </GradientLink>
+                ) : (
+                  <GradientLink
+                    variant="cta"
+                    size="lg"
+                    href="/signUp"
+                  >
+                    Get Started Free
+                  </GradientLink>
+                )}
               </div>
 
               {/* Stats */}
