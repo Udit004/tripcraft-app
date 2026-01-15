@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { activityColors, colors } from '@/constants/colors';
-import { ACTIVITY_TYPES, ActivityType } from '@/constants/activityTypes';
+import { ACTIVITY_TYPE_METADATA, ActivityType } from '@/constants/activityTypes';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { GradientButton } from '../ui/GradientButton';
@@ -20,7 +20,7 @@ interface ActivityPoolCardProps {
 export default function ActivityPoolCard({ activity, onRemove, onAddToDay }: ActivityPoolCardProps) {
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const activityTypeInfo = ACTIVITY_TYPES[activity.activityType as ActivityType];
+  const activityTypeInfo = ACTIVITY_TYPE_METADATA[activity.activityType as ActivityType];
   const categoryColor = activityTypeInfo && activityTypeInfo.category
     ? activityColors[activityTypeInfo.category as keyof typeof activityColors]
     : activityColors.other;
