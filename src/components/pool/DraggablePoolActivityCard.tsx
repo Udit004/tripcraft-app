@@ -1,29 +1,58 @@
 'use client';
 
 import { IActivityResponse } from '@/types/activity';
-import { MapPin, Trash2, Calendar } from 'lucide-react';
+import { MapPin, Trash2, Calendar, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { activityColors, colors } from '@/constants/colors';
 import { ACTIVITY_TYPE_METADATA, ActivityType } from '@/constants/activityTypes';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { GradientButton } from '../ui/GradientButton';
+import { useDrag } from '@/context/DragContext';
 
-interface ActivityPoolCardProps {
+interface DraggablePoolActivityCardProps {
   activity: IActivityResponse;
   onRemove: (activityId: string) => Promise<boolean>;
   onAddToDay: (activity: IActivityResponse) => void;
 }
 
-export default function ActivityPoolCard({ activity, onRemove, onAddToDay }: ActivityPoolCardProps) {
+export default function DraggablePoolActivityCard({ 
+  activity, 
+  onRemove, 
+  onAddToDay 
+}: DraggablePoolActivityCardProps) {
   const [isRemoving, setIsRemoving] = useState(false);
+  const { setDraggedActivity, clearDragState, isDragging, draggedActivity } = useDrag();
 
   const activityTypeInfo = ACTIVITY_TYPE_METADATA[activity.activityType as ActivityType];
   const categoryColor = activityTypeInfo?.category && activityColors[activityTypeInfo.category as keyof typeof activityColors]
     ? activityColors[activityTypeInfo.category as keyof typeof activityColors]
     : activityColors.other || { bg: '#F1F5F9', text: '#64748B' };
+
+  const isBeingDragged = isDragging && draggedActivity?._id === activity._id;
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    // Set drag data
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('activityId', activity._id.toString());
+    e.dataTransfer.setData('source', 'pool');
+    
+    // Set drag context
+    setDraggedActivity(activity, 'pool');
+
+    // Optional: Create custom drag image
+    const dragImage = e.currentTarget.cloneNode(true) as HTMLElement;
+    dragImage.style.opacity = '0.8';
+    dragImage.style.transform = 'rotate(2deg)';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
+  };
+
+  const handleDragEnd = () => {
+    clearDragState();
+  };
 
   const handleRemove = async () => {
     try {
@@ -41,21 +70,42 @@ export default function ActivityPoolCard({ activity, onRemove, onAddToDay }: Act
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 h-full border-2" style={{ borderColor: colors.border, backgroundColor: colors.background }}>
+    <Card 
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      className={`
+        hover:shadow-lg transition-all duration-200 h-full border-2 cursor-move
+        ${isBeingDragged ? 'opacity-50 scale-95 shadow-2xl' : ''}
+      `}
+      style={{ 
+        borderColor: colors.border, 
+        backgroundColor: colors.background 
+      }}
+    >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-lg line-clamp-2" style={{ color: colors.textMain }}>
-            {activity.title}
-          </h3>
-          <Badge
-            className="shrink-0 text-xs font-medium flex items-center gap-1"
-            style={{
-              backgroundColor: categoryColor.bg,
-              color: categoryColor.text,
-            }}
-          >
-            {activityTypeInfo?.emoji} {activityTypeInfo?.label || activity.activityType}
-          </Badge>
+        <div className="flex items-start gap-3">
+          {/* Drag Handle */}
+          <div className="pt-1 cursor-grab active:cursor-grabbing" style={{ color: colors.textMuted }}>
+            <GripVertical className="h-5 w-5" />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-semibold text-lg line-clamp-2" style={{ color: colors.textMain }}>
+                {activity.title}
+              </h3>
+              <Badge
+                className="shrink-0 text-xs font-medium flex items-center gap-1"
+                style={{
+                  backgroundColor: categoryColor.bg,
+                  color: categoryColor.text,
+                }}
+              >
+                {activityTypeInfo?.emoji} {activityTypeInfo?.label || activity.activityType}
+              </Badge>
+            </div>
+          </div>
         </div>
       </CardHeader>
       

@@ -69,8 +69,8 @@ export default function ActivityCard({ activity, onAddToPool }: ActivityCardProp
   const confStyle = confidenceStyles[activity.confidence];
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 h-full border-2" style={{ borderColor: colors.border }}>
-      <CardHeader className="pb-3">
+    <Card className="hover:shadow-lg transition-shadow duration-200 h-full border-2 flex flex-col" style={{ borderColor: colors.border }}>
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-semibold text-lg line-clamp-2" style={{ color: colors.textMain }}>
             {activity.title}
@@ -90,37 +90,40 @@ export default function ActivityCard({ activity, onAddToPool }: ActivityCardProp
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
-        {/* Description */}
-        <p className="text-sm line-clamp-2" style={{ color: colors.textMuted }}>
-          {activity.description}
-        </p>
+      <CardContent className="space-y-3 flex-1 flex flex-col">
+        {/* Content Area */}
+        <div className="flex-1">
+          {/* Description */}
+          <p className="text-sm line-clamp-2" style={{ color: colors.textMuted }}>
+            {activity.description}
+          </p>
 
-        {/* Metadata */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Category */}
-          <Badge
-            className="text-xs font-medium"
-            style={{
-              backgroundColor: catColor.bg,
-              color: catColor.text,
-            }}
-          >
-            {activity.category}
-          </Badge>
+          {/* Metadata */}
+          <div className="flex items-center gap-2 flex-wrap mt-3">
+            {/* Category */}
+            <Badge
+              className="text-xs font-medium"
+              style={{
+                backgroundColor: catColor.bg,
+                color: catColor.text,
+              }}
+            >
+              {activity.category}
+            </Badge>
 
-          {/* Location */}
-          <div className="flex items-center gap-1 text-xs" style={{ color: colors.textMuted }}>
-            <MapPin className="h-3 w-3" />
-            <span>{activity.location}</span>
+            {/* Location */}
+            <div className="flex items-center gap-1 text-xs" style={{ color: colors.textMuted }}>
+              <MapPin className="h-3 w-3" />
+              <span>{activity.location}</span>
+            </div>
           </div>
         </div>
 
-        {/* Add to Pool Button */}
+        {/* Add to Pool Button - Always at Bottom */}
         <GradientButton
           onClick={handleAddToPool}
           disabled={isAdding || isAdded}
-          className="w-full mt-2"
+          className="w-full mt-4"
           variant={isAdded ? "primary" : "secondary"}
           size="sm"
         >
