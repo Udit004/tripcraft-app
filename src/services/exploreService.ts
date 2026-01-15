@@ -1,12 +1,8 @@
 import apiClient  from './apiClient';
+import { ExploreActivity } from '@/types/activity';
 
-export interface ExploreActivity {
-  title: string;
-  category: string;
-  location: string;
-  description: string;
-  confidence: 'high' | 'medium' | 'low';
-}
+// Re-export for backward compatibility
+export type { ExploreActivity };
 
 export interface ExploreData {
   destination: string;
