@@ -9,6 +9,8 @@ import { hasOrderTimeMismatch, autoFixActivityOrder } from '@/utility/activityTi
 import { isMealType, isRestType } from '@/constants/activityTypes'
 import { GradientButton } from '@/components/ui/GradientButton'
 import { toast as sonnerToast, toast } from 'sonner'
+import { useDrag } from '@/context/DragContext'
+import { moveActivityToDay } from '@/services/activityPoolService'
 
 interface ActivityListWithDnDProps {
   tripId: string
@@ -38,6 +40,9 @@ export default function ActivityListWithDnD({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [hasWarning, setHasWarning] = useState(false)
   const [isFixing, setIsFixing] = useState(false)
+  const [isAddingFromPool, setIsAddingFromPool] = useState(false)
+
+  const { draggedActivity, dragSource, clearDragState } = useDrag()
 
   useEffect(() => {
     setActivities(initialActivities)
@@ -71,7 +76,11 @@ export default function ActivityListWithDnD({
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
-    setDragOverIndex(index)
+    
+    // Accept drops from pool or internal reordering
+    if (dragSource === 'pool' || draggedIndex !== null) {
+      setDragOverIndex(index)
+    }
   }
 
   const handleDragEnd = () => {
@@ -82,6 +91,35 @@ export default function ActivityListWithDnD({
   const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
     
+    // Check if dropping from pool
+    if (dragSource === 'pool' && draggedActivity) {
+      setIsAddingFromPool(true)
+      try {
+        const success = await moveActivityToDay(
+          draggedActivity._id.toString(),
+          tripId,
+          dayId
+        )
+
+        if (success) {
+          toast.success(`Added "${draggedActivity.title}" to this day`)
+          // Trigger refresh via custom event
+          const event = new CustomEvent('activity-pool-changed')
+          window.dispatchEvent(event)
+        } else {
+          toast.error('Failed to add activity from pool')
+        }
+      } catch (error) {
+        console.error('Error adding activity from pool:', error)
+        toast.error('Failed to add activity from pool')
+      } finally {
+        setIsAddingFromPool(false)
+        clearDragState()
+      }
+      return
+    }
+
+    // Original reorder logic for activities within the day
     if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null)
       setDragOverIndex(null)
@@ -89,8 +127,8 @@ export default function ActivityListWithDnD({
     }
 
     const newActivities = [...activities]
-    const [draggedActivity] = newActivities.splice(draggedIndex, 1)
-    newActivities.splice(dropIndex, 0, draggedActivity)
+    const [reorderedActivity] = newActivities.splice(draggedIndex, 1)
+    newActivities.splice(dropIndex, 0, reorderedActivity)
 
     setActivities(newActivities)
     setDraggedIndex(null)
@@ -220,17 +258,64 @@ export default function ActivityListWithDnD({
 
       {/* Activities List */}
       {activities.length === 0 ? (
-        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+        <div 
+          className={`
+            bg-gray-50 border-2 border-dashed rounded-lg p-12 text-center transition-colors
+            ${dragSource === 'pool' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+          `}
+          onDragOver={(e) => {
+            e.preventDefault()
+            if (dragSource === 'pool') {
+              e.dataTransfer.dropEffect = 'move'
+            }
+          }}
+          onDrop={async (e) => {
+            e.preventDefault()
+            if (dragSource === 'pool' && draggedActivity) {
+              setIsAddingFromPool(true)
+              try {
+                const success = await moveActivityToDay(
+                  draggedActivity._id.toString(),
+                  tripId,
+                  dayId
+                )
+
+                if (success) {
+                  toast.success(`Added "${draggedActivity.title}" to this day`)
+                  const event = new CustomEvent('activity-pool-changed')
+                  window.dispatchEvent(event)
+                } else {
+                  toast.error('Failed to add activity from pool')
+                }
+              } catch (error) {
+                console.error('Error adding activity from pool:', error)
+                toast.error('Failed to add activity from pool')
+              } finally {
+                setIsAddingFromPool(false)
+                clearDragState()
+              }
+            }
+          }}
+        >
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">No Activities Yet</h4>
-          <p className="text-gray-600 mb-4">Start planning your day by adding activities</p>
-          <GradientButton
-            variant="primary"
-            size="md"
-            onClick={() => setShowModal(true)}
-          >
-            Add Your First Activity
-          </GradientButton>
+          <h4 className="text-lg font-semibold text-gray-900 mb-2">
+            {dragSource === 'pool' ? 'Drop activity here' : 'No Activities Yet'}
+          </h4>
+          <p className="text-gray-600 mb-4">
+            {dragSource === 'pool' 
+              ? 'Release to add this activity to the day' 
+              : 'Start planning your day by adding activities'
+            }
+          </p>
+          {dragSource !== 'pool' && (
+            <GradientButton
+              variant="primary"
+              size="md"
+              onClick={() => setShowModal(true)}
+            >
+              Add Your First Activity
+            </GradientButton>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -265,7 +350,7 @@ export default function ActivityListWithDnD({
       {activities.length > 1 && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
-            💡 <span className="font-semibold">Tip:</span> Drag and drop activities to change their order
+            💡 <span className="font-semibold">Tip:</span> Drag and drop activities to change their order, or drag from Activity Pool to add new ones
           </p>
         </div>
       )}

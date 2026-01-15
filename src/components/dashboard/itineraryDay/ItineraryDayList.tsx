@@ -7,22 +7,26 @@ import { ItineraryDayCard } from './ItineraryDayCard'
 
 interface ItineraryDayListProps {
   days: IItineraryDayResponse[]
+  tripId: string
   tripDurationDays: number
   onDayClick?: (day: IItineraryDayResponse) => void
   onEditDay: (day: IItineraryDayResponse) => void
   onDeleteDay: (day: IItineraryDayResponse) => void
   onEditTrip: () => void
   checkExceedsDuration: (dayNumber: number) => boolean
+  onActivityAdded?: () => void
 }
 
 export const ItineraryDayList: React.FC<ItineraryDayListProps> = ({
   days,
+  tripId,
   tripDurationDays,
   onDayClick,
   onEditDay,
   onDeleteDay,
   onEditTrip,
-  checkExceedsDuration
+  checkExceedsDuration,
+  onActivityAdded
 }) => (
   <div className="space-y-6">
     {days.map((day, index) => {
@@ -38,6 +42,8 @@ export const ItineraryDayList: React.FC<ItineraryDayListProps> = ({
           exceedsTripDuration={exceedsDuration}
           tripDurationDays={tripDurationDays}
           onEditTrip={onEditTrip}
+          tripId={tripId}
+          onActivityAdded={onActivityAdded}
         />
       )
     })}

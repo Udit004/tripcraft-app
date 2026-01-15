@@ -1,10 +1,13 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { IItineraryDayResponse } from '@/types/itineraryDay'
 import { Calendar, MapPin, Clock, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import SwipeableItem from '../SwipeableItem'
+import { useDrag } from '@/context/DragContext'
+import  { moveActivityToDay }  from '@/services/activityPoolService'
+import { toast } from 'sonner'
 
 interface ItineraryDayCardProps {
   day: IItineraryDayResponse
@@ -15,6 +18,8 @@ interface ItineraryDayCardProps {
   exceedsTripDuration?: boolean
   tripDurationDays?: number
   onEditTrip?: () => void
+  onActivityAdded?: () => void
+  tripId: string
 }
 
 export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
@@ -25,10 +30,76 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
   onDelete,
   exceedsTripDuration = false,
   tripDurationDays = 0,
-  onEditTrip
+  onEditTrip,
+  onActivityAdded,
+  tripId
 }) => {
   const formattedDate = format(new Date(day.date), 'EEEE, MMMM d, yyyy')
   const hasActivities = day.activitiesId && day.activitiesId.length > 0
+  
+  const { draggedActivity, dragSource, setDragOverDayId, clearDragState } = useDrag()
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
+
+  // Handle drag over to show drop zone
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Only allow drops from pool
+    const source = e.dataTransfer.types.includes('activityid') ? 'pool' : null
+    if (source === 'pool' || dragSource === 'pool') {
+      e.dataTransfer.dropEffect = 'move'
+      setIsDragOver(true)
+      setDragOverDayId(day._id.toString())
+    }
+  }
+
+  // Handle drag leave
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+    setDragOverDayId(null)
+  }
+
+  // Handle drop
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+    setDragOverDayId(null)
+
+    // Validate it's from pool
+    if (dragSource !== 'pool' || !draggedActivity) {
+      toast.error('Invalid drop source')
+      clearDragState()
+      return
+    }
+
+    try {
+      setIsAdding(true)
+      
+      const success = await moveActivityToDay(
+        draggedActivity._id.toString(),
+        tripId,
+        day._id.toString()
+      )
+
+      if (success) {
+        toast.success(`Added "${draggedActivity.title}" to Day ${day.dayNumber}`)
+        onActivityAdded?.()
+      } else {
+        toast.error('Failed to add activity to day')
+      }
+    } catch (error) {
+      console.error('Error adding activity to day:', error)
+      toast.error('Failed to add activity to day')
+    } finally {
+      setIsAdding(false)
+      clearDragState()
+    }
+  }
 
   return (
     <div className="relative">
@@ -38,7 +109,16 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
       )}
 
       <SwipeableItem onEdit={onEdit} onDelete={onDelete}>
-        <div className="flex gap-4 cursor-pointer" onClick={() => onClick?.(day)}>
+        <div 
+          className={`
+            flex gap-4 cursor-pointer
+            ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+          `}
+          onClick={() => onClick?.(day)}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           {/* Day number badge */}
           <div className="flex-shrink-0">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1E3A8A] to-[#0EA5A4] flex items-center justify-center text-white font-semibold text-lg shadow-md">
@@ -47,7 +127,14 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
           </div>
 
           {/* Card content */}
-          <div className="flex-1 bg-white rounded-xl border border-[#E5E7EB] p-6 hover:shadow-lg transition-shadow duration-200">
+          <div className={`
+            flex-1 bg-white rounded-xl border p-6 transition-all duration-200
+            ${isDragOver 
+              ? 'border-blue-500 border-2 border-dashed shadow-xl bg-blue-50' 
+              : 'border-[#E5E7EB] hover:shadow-lg'
+            }
+            ${isAdding ? 'opacity-50 pointer-events-none' : ''}
+          `}>
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -83,10 +170,19 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-4 bg-[#FEF3C7] border border-[#FCD34D] rounded-lg">
+              <div className={`
+                flex items-center gap-3 p-4 rounded-lg border transition-colors
+                ${isDragOver 
+                  ? 'bg-blue-100 border-blue-400' 
+                  : 'bg-[#FEF3C7] border-[#FCD34D]'
+                }
+              `}>
                 <Clock className="w-5 h-5 text-[#F59E0B]" />
                 <p className="text-sm text-[#92400E]">
-                  No activities planned yet. Add activities to complete your itinerary.
+                  {isDragOver 
+                    ? 'Drop activity here to add to this day' 
+                    : 'No activities planned yet. Add activities to complete your itinerary.'
+                  }
                 </p>
               </div>
             )}

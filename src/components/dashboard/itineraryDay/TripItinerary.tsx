@@ -27,9 +27,18 @@ import { TripDurationWarning } from './TripDurationWarning'
 import { exceedsTripDuration as checkExceedsTripDuration } from '@/utility/tripUtils'
 
 // Main component
-export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: string, onDayClick?: (day: IItineraryDayResponse) => void }) {
+export default function TripItinerary({ tripSlug, tripId, onDayClick }: { tripSlug: string, tripId?: string, onDayClick?: (day: IItineraryDayResponse) => void }) {
   // Custom hooks
   const { itineraryData, trip, loading, error, tripDurationDays, daysExceedingDuration, fetchItineraryDays } = useItinerary(tripSlug)
+
+  // Listen for activity pool changes
+  useEffect(() => {
+    const handlePoolChange = () => {
+      fetchItineraryDays();
+    };
+    window.addEventListener('activity-pool-changed', handlePoolChange);
+    return () => window.removeEventListener('activity-pool-changed', handlePoolChange);
+  }, [fetchItineraryDays]);
   const { openModal, editingDay, editingTrip, setOpenModal, setEditingDay, setEditingTrip } = useItineraryModals()
   const { deletingDay, isDeleting, setDeletingDay, handleConfirmDelete } = useItineraryDelete(tripSlug)
   const { handleDayClick } = useItineraryNavigation(tripSlug, onDayClick)
@@ -117,12 +126,14 @@ export default function TripItinerary({ tripSlug, onDayClick }: { tripSlug: stri
       ) : (
         <ItineraryDayList
           days={itineraryData}
+          tripId={tripId || tripSlug}
           tripDurationDays={tripDurationDays}
           onDayClick={handleDayClick}
           onEditDay={handleEditDay}
           onDeleteDay={handleDeleteDay}
           onEditTrip={() => setEditingTrip(true)}
           checkExceedsDuration={checkExceedsDuration}
+          onActivityAdded={fetchItineraryDays}
         />
       )}
 
