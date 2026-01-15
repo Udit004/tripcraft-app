@@ -1,12 +1,23 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IActivity } from "@/types/activity";
 
 const ActivitySchema = new Schema<IActivity>(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     itineraryDayId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ItineraryDay",
-      required: true,
+      required: false, // Optional - null when activity is in pool
+    },
+    isInPool: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     activityType: {
       type: String,
@@ -35,6 +46,9 @@ const ActivitySchema = new Schema<IActivity>(
   },
   { timestamps: true }
 );
+
+// Compound index for efficient pool queries
+ActivitySchema.index({ userId: 1, isInPool: 1 });
 
 const ActivityModel =
   mongoose.models.Activity ||
