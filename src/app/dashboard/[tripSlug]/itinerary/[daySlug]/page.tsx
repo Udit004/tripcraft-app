@@ -18,16 +18,17 @@ import { toast } from '@/lib/toast';
 import { toast as sonnerToast } from 'sonner';
 import UndoToast from '@/components/UndoToast';
 import { GradientButton } from '@/components/ui/GradientButton';
+import { colors } from '@/constants/colors';
 
 
-export default function ItineraryPage({ 
-  params 
-}: { 
-  params: Promise<{ tripSlug: string; daySlug: string }> 
+export default function ItineraryPage({
+  params
+}: {
+  params: Promise<{ tripSlug: string; daySlug: string }>
 }) {
   const router = useRouter();
   const { tripSlug, daySlug } = use(params);
-  
+
   const [itineraryData, setItineraryData] = useState<IItineraryDay | null>(null);
   const [activityData, setActivityData] = useState<IActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,9 +46,9 @@ export default function ItineraryPage({
     try {
       setLoading(true);
       setError(null);
-      
+
       const dayData = await getItineraryDayById(tripSlug, daySlug);
-      
+
       if (dayData) {
         setItineraryData(dayData);
         setActivityData(dayData.activities || []);
@@ -80,7 +81,7 @@ export default function ItineraryPage({
         startTime: activityData.startTime ? new Date(`2000-01-01T${activityData.startTime}`) : undefined,
         endTime: activityData.endTime ? new Date(`2000-01-01T${activityData.endTime}`) : undefined,
       };
-      
+
       await addActivityToItineraryDay(tripSlug, daySlug, formattedData);
       toast.success('Activity added successfully!');
       // Refresh the data
@@ -121,15 +122,15 @@ export default function ItineraryPage({
     }
   };
 
-const handleEditActivity = async (activityId: string, activityData: any) => {
+  const handleEditActivity = async (activityId: string, activityData: any) => {
     try {
       // Convert time strings to Date objects if provided, otherwise exclude them
-      const formattedData: any = {  
+      const formattedData: any = {
         activityType: activityData.activityType,
         title: activityData.title,
         description: activityData.description,
         location: activityData.location,
-      };  
+      };
       // Only include time fields if they have values
       if (activityData.startTime) {
         formattedData.startTime = new Date(`2000-01-01T${activityData.startTime}`);
@@ -172,7 +173,7 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
       if (activityData.endTime) {
         formattedData.endTime = new Date(`2000-01-01T${activityData.endTime}`);
       }
-      
+
       await updateActivity(tripSlug, daySlug, activityId, formattedData);
       toast.success('Activity updated successfully!');
       // Refresh the data
@@ -186,19 +187,19 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
 
   const handleDeleteDay = async () => {
     if (!itineraryData) return;
-    
+
     try {
       setDeleting(true);
       const result = await deleteItineraryDay(tripSlug, daySlug);
-      
+
       if (result.success) {
         setShowDeleteConfirm(false);
-        
+
         // Show undo toast with countdown
         if (result.deletionLogId) {
           const dayNumber = itineraryData.dayNumber;
           const dayDate = format(new Date(itineraryData.date), 'MMM d, yyyy');
-          
+
           sonnerToast.custom(
             (t) => (
               <UndoToast
@@ -219,7 +220,7 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
             ),
             { duration: (result.undoWindowSeconds || 10) * 1000 }
           );
-          
+
           // Don't navigate immediately, wait for undo window
           // Navigation happens in onExpire callback
         } else {
@@ -240,7 +241,7 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
   const handleblackDrop = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       setEditingDay(false);
-    } 
+    }
   };
 
   // Loading State
@@ -256,28 +257,33 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
   // Empty State
   if (!itineraryData) {
     return (
-      <ErrorState 
-        message="No itinerary data available" 
-        onRetry={fetchItineraryDayById} 
+      <ErrorState
+        message="No itinerary data available"
+        onRetry={fetchItineraryDayById}
       />
     );
   }
 
   // Success State
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div
+          className="px-6 py-8 text-white rounded-md"
+          style={{
+            background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push(`/dashboard/${tripSlug}`)}
-              className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors font-semibold cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 text-gray-200 bg-indigo-800 hover:bg-indigo-900 rounded-lg transition-colors font-semibold cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Itinerary
             </button>
-            
+
             <div className="flex items-center gap-2">
               <GradientButton
                 variant='edit'
@@ -298,7 +304,7 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
               </GradientButton>
             </div>
           </div>
-          <DayHeader 
+          <DayHeader
             dayNumber={itineraryData.dayNumber}
             dayName={itineraryData.dayName}
             date={itineraryData.date.toString()}
@@ -323,9 +329,9 @@ const handleEditActivity = async (activityId: string, activityData: any) => {
 
       {/* Edit Itinerary Day Modal */}
       {editingDay && itineraryData && (
-        <div 
-        onClick={(e) => handleblackDrop(e)}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+        <div
+          onClick={(e) => handleblackDrop(e)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 my-8">
             <EditItineraryDayModal
               dayId={daySlug}

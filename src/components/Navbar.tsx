@@ -1,17 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X } from 'lucide-react';
-import { colors, buttonGradients } from '@/constants/colors';
+import { Menu, X, Heart } from 'lucide-react';
+import { colors } from '@/constants/colors';
+import { getPoolCount } from '@/services/activityPoolService';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [poolCount, setPoolCount] = useState(0);
+
+  // Fetch pool count when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      getPoolCount().then(setPoolCount).catch(() => setPoolCount(0));
+    }
+  }, [isAuthenticated, pathname]); // Re-fetch when route changes
 
   // Helper function to check if a route is active
   const isActive = (href: string) => pathname === href;
@@ -69,6 +78,22 @@ export default function Navbar() {
             >
               Explore
             </Link>
+            {isAuthenticated && (
+              <Link 
+                href="/activity-pool" 
+                className="font-medium transition-colors relative"
+                style={getNavLinkStyles('/activity-pool')}
+              >
+                <div className="flex items-center gap-1">
+                  Pool
+                  {poolCount > 0 && (
+                    <span className="absolute -top-2 -right-4 bg-teal-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                      {poolCount > 99 ? '99+' : poolCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            )}
           </div>
 
           {/* Auth Buttons - Desktop */}
@@ -154,6 +179,25 @@ export default function Navbar() {
               >
                 Explore
               </Link>
+              {isAuthenticated && (
+                <Link 
+                  href="/activity-pool" 
+                  className="font-medium py-3 px-3 rounded-lg transition-colors flex items-center gap-2"
+                  style={{
+                    color: isActive('/activity-pool') ? colors.primary : colors.textMuted,
+                    backgroundColor: isActive('/activity-pool') ? colors.background : 'transparent',
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Heart className="h-4 w-4" />
+                  Activity Pool
+                  {poolCount > 0 && (
+                    <span className="bg-pink-500 text-white text-xs rounded-full px-2 py-0.5 font-semibold">
+                      {poolCount}
+                    </span>
+                  )}
+                </Link>
+              )}
               
               <div className="border-t border-[#E5E7EB] my-2"></div>
               

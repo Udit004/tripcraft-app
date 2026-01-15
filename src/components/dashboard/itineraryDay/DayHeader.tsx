@@ -15,19 +15,19 @@ export default function DayHeader({ dayNumber, dayName, date, warnings }: DayHea
   return (
     <div>
       <div className="flex items-baseline gap-3 mb-2">
-        <h2 className="text-3xl font-bold text-gray-900">
+        <h2 className="text-3xl font-bold text-gray-50">
           Day {dayNumber}
         </h2>
         {dayName && (
-          <span className="text-lg font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+          <span className="text-lg font-semibold text-gray-100 text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
             {dayName}
           </span>
         )}
       </div>
       <div className="flex items-center gap-4 text-gray-600 mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-600" />
-          <span className="font-medium">
+          <Calendar className="w-5 h-5 text-gray-400" />
+          <span className="font-medium text-gray-200">
             {format(new Date(date), 'EEEE, MMMM d, yyyy')}
           </span>
         </div>

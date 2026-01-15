@@ -46,6 +46,14 @@ export default function Home() {
                     Get Started Free
                   </GradientLink>
                 )}
+
+                <GradientLink
+                  variant="primary"
+                  size="lg"
+                  href="/explore"
+                >
+                  Explore destinations
+                </GradientLink>
               </div>
 
               {/* Stats */}

@@ -1,20 +1,55 @@
 'use client';
 
-import { ExploreActivity } from '@/services/exploreService';
-import { MapPin, Star } from 'lucide-react';
+import { ExploreActivity } from '@/types/activity';
+import { MapPin, Star, Plus, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { activityColors, colors } from '@/constants/colors';
+import { addToPool } from '@/services/activityPoolService';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { GradientButton,} from '../ui/GradientButton';
 
 interface ActivityCardProps {
   activity: ExploreActivity;
+  onAddToPool?: (activity: ExploreActivity) => void;
 }
 
 /**
  * Individual activity card component
  * Displays a single tourist attraction with details
  */
-export default function ActivityCard({ activity }: ActivityCardProps) {
+export default function ActivityCard({ activity, onAddToPool }: ActivityCardProps) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAddToPool = async () => {
+    try {
+      setIsAdding(true);
+      await addToPool(activity);
+      setIsAdded(true);
+      toast.success('Added to your activity pool!');
+      onAddToPool?.(activity);
+      
+      // Reset after 2 seconds
+      setTimeout(() => setIsAdded(false), 2000);
+    } catch (error: unknown) {
+      console.error('Error adding to pool:', error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const responseError = error as { response?: { status?: number } };
+        if (responseError.response?.status === 409) {
+          toast.error('Activity already in your pool');
+        } else {
+          toast.error('Failed to add to pool. Please try again.');
+        }
+      } else {
+        toast.error('Failed to add to pool. Please try again.');
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   // Category colors mapping
   const categoryColorMap: Record<string, { bg: string; text: string }> = {
     nature: activityColors.nature,
@@ -80,6 +115,27 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             <span>{activity.location}</span>
           </div>
         </div>
+
+        {/* Add to Pool Button */}
+        <GradientButton
+          onClick={handleAddToPool}
+          disabled={isAdding || isAdded}
+          className="w-full mt-2"
+          variant={isAdded ? "primary" : "secondary"}
+          size="sm"
+        >
+          {isAdded ? (
+            <>
+              <Check className="h-4 w-4 mr-2" />
+              Added to Pool
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 mr-2" />
+              {isAdding ? 'Adding...' : 'Add to Pool'}
+            </>
+          )}
+        </GradientButton>
       </CardContent>
     </Card>
   );
