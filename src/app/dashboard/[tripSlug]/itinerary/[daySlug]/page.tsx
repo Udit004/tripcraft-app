@@ -133,39 +133,6 @@ export default function ItineraryPage({
     }
   };
 
-  const handleEditActivity = async (activityId: string, activityData: any) => {
-    try {
-      // Convert time strings to Date objects if provided, otherwise exclude them
-      const formattedData: any = {
-        activityType: activityData.activityType,
-        title: activityData.title,
-        description: activityData.description,
-        location: activityData.location,
-      };
-      // Only include time fields if they have values
-      if (activityData.startTime) {
-        formattedData.startTime = new Date(`2000-01-01T${activityData.startTime}`);
-      }
-      if (activityData.endTime) {
-        formattedData.endTime = new Date(`2000-01-01T${activityData.endTime}`);
-      }
-      await updateActivity(tripSlug, daySlug, activityId, formattedData);
-      toast.success('Activity updated successfully!');
-      // Refresh the data
-      await fetchItineraryDayById();
-    }
-    catch (error) {
-      console.error('Error updating activity:', error);
-      toast.error('Failed to update activity. Please try again.');
-      throw error;
-    }
-  };
-
-  // Adapter function for ActivityListWithDnD component - expects (activity: IActivity) => void
-  const handleEditActivityAdapter = (activity: IActivity) => {
-    handleEditActivity(activity._id?.toString() || '', activity);
-  };
-
 
   const handleUpdateActivity = async (activityId: string, activityData: any) => {
     try {
@@ -298,17 +265,19 @@ export default function ItineraryPage({
             <div className="flex items-center gap-2">
               <GradientButton
                 variant='edit'
+                size='sm'
                 onClick={() => setEditingDay(true)}
-                className="flex items-center gap-2 w-24 h-12 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-semibold cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-semibold cursor-pointer"
               >
                 <Pencil className="w-5 h-5" />
                 Edit
               </GradientButton>
               <GradientButton
                 variant='delete'
+                size='sm'
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={deleting}
-                className="flex items-center gap-2 w-24 h-12 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Trash2Icon className="w-3 md:w-5 h-5" />
                 Delete
@@ -330,7 +299,6 @@ export default function ItineraryPage({
             dayId={daySlug}
             initialActivities={activityData}
             onActivityAdd={handleAddActivity}
-            onActivityEdit={handleEditActivityAdapter}
             onActivityUpdate={handleUpdateActivity}
             onActivityDelete={handleDeleteActivity}
             onReorder={handleReorderActivities}

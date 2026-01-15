@@ -7,37 +7,46 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#1E3A8A] to-[#0EA5A4] py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                About TripCraft
-              </h1>
-              <p className="text-xl text-blue-100 leading-relaxed">
-                We believe travel planning should be exciting, not overwhelming. 
-                TripCraft was built to help travelers focus on what matters—creating 
-                memorable experiences.
-              </p>
-            </div>
+      <section className="relative overflow-hidden mx-20 mt-10 py-20 lg:py-28 rounded-lg ">
 
-            {/* Right Image */}
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="relative w-full h-full min-h-[400px]">
-                <Image
-                  src="/images/aboutPage/AboutHeroImg.png"
-                  alt="TripCraft travel planning dashboard on laptop"
-                  width={800} 
-                  height={400}
-                  className="object-contain rounded-xl shadow-sm drop-shadow-2xl"
-                  priority
-                />
-              </div>
-            </div>
+        {/* Background Image */}
+        <Image
+          src="/images/aboutPage/AboutHeroImg.png"
+          alt="TripCraft travel planning experience"
+          fill
+          priority
+          className="object-cover object-center"
+        />
+
+        {/* Gradient Overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+        linear-gradient(
+          135deg,
+          rgba(30, 58, 138, 0.85),
+          rgba(14, 165, 164, 0.85)
+        )
+      `,
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              About TripCraft
+            </h1>
+            <p className="text-xl text-blue-100 leading-relaxed">
+              We believe travel planning should be exciting, not overwhelming.
+              TripCraft was built to help travelers focus on what matters—creating
+              memorable experiences.
+            </p>
           </div>
         </div>
       </section>
+
 
       {/* Mission Section */}
       <section className="py-20 lg:py-28 bg-[#F8FAFC]">
@@ -48,12 +57,12 @@ export default function AboutPage() {
                 Our Mission
               </h2>
               <p className="text-lg text-[#475569] mb-6 leading-relaxed">
-                Travel opens doors to new cultures, perspectives, and experiences. 
+                Travel opens doors to new cultures, perspectives, and experiences.
                 But planning shouldn't be a barrier to adventure.
               </p>
               <p className="text-lg text-[#475569] leading-relaxed">
-                TripCraft empowers travelers with simple, powerful tools to organize 
-                every aspect of their journey—from itineraries to budgets—so they can 
+                TripCraft empowers travelers with simple, powerful tools to organize
+                every aspect of their journey—from itineraries to budgets—so they can
                 spend less time planning and more time exploring.
               </p>
             </div>
@@ -119,8 +128,8 @@ export default function AboutPage() {
                 Simplicity First
               </h3>
               <p className="text-[#475569] leading-relaxed">
-                We believe the best tools are intuitive. Complex features shouldn't 
-                require complex interfaces. Every interaction is crafted to be clear 
+                We believe the best tools are intuitive. Complex features shouldn't
+                require complex interfaces. Every interaction is crafted to be clear
                 and straightforward.
               </p>
             </div>
@@ -130,8 +139,8 @@ export default function AboutPage() {
                 Privacy Matters
               </h3>
               <p className="text-[#475569] leading-relaxed">
-                Your travel plans are personal. We use industry-standard encryption 
-                and never share your data with third parties. Your information belongs 
+                Your travel plans are personal. We use industry-standard encryption
+                and never share your data with third parties. Your information belongs
                 to you, always.
               </p>
             </div>
@@ -141,7 +150,7 @@ export default function AboutPage() {
                 Built for Real People
               </h3>
               <p className="text-[#475569] leading-relaxed">
-                We're travelers too. Every feature comes from real experiences and 
+                We're travelers too. Every feature comes from real experiences and
                 genuine pain points we've encountered while planning our own trips.
               </p>
             </div>
@@ -151,7 +160,7 @@ export default function AboutPage() {
                 Constantly Evolving
               </h3>
               <p className="text-[#475569] leading-relaxed">
-                Travel changes, and so do we. We actively listen to our community 
+                Travel changes, and so do we. We actively listen to our community
                 and regularly ship improvements based on your feedback.
               </p>
             </div>
@@ -165,24 +174,24 @@ export default function AboutPage() {
           <h2 className="text-3xl sm:text-4xl font-bold text-[#0F172A] mb-8 text-center">
             How TripCraft Began
           </h2>
-          
+
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-[#475569] mb-6 leading-relaxed">
-              TripCraft started from a simple frustration: planning a two-week trip 
-              to Southeast Asia shouldn't require juggling spreadsheets, notes apps, 
+              TripCraft started from a simple frustration: planning a two-week trip
+              to Southeast Asia shouldn't require juggling spreadsheets, notes apps,
               and countless browser tabs.
             </p>
-            
+
             <p className="text-lg text-[#475569] mb-6 leading-relaxed">
-              After struggling with fragmented tools and losing important details in 
-              the chaos, we realized there had to be a better way. We wanted one place 
+              After struggling with fragmented tools and losing important details in
+              the chaos, we realized there had to be a better way. We wanted one place
               to manage everything—itineraries, budgets, bookings, and notes.
             </p>
-            
+
             <p className="text-lg text-[#475569] leading-relaxed">
-              So we built TripCraft. What started as a personal project grew into a 
-              platform used by thousands of travelers worldwide. Today, we're proud 
-              to help people turn their travel dreams into reality with less stress 
+              So we built TripCraft. What started as a personal project grew into a
+              platform used by thousands of travelers worldwide. Today, we're proud
+              to help people turn their travel dreams into reality with less stress
               and more confidence.
             </p>
           </div>
@@ -196,7 +205,7 @@ export default function AboutPage() {
             Join Our Community
           </h2>
           <p className="text-lg text-blue-100 mb-10 max-w-2xl mx-auto">
-            Become part of a growing community of travelers who plan smarter and 
+            Become part of a growing community of travelers who plan smarter and
             travel better with TripCraft.
           </p>
           <GradientLink

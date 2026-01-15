@@ -55,15 +55,15 @@ export default function TripHeader({ trip }: TripHeaderProps) {
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     setError(null);
-    
+
     try {
       const result = await deleteTrip(trip._id.toString());
-      
+
       if (result && result.success) {
         // Close the delete dialog first
         setShowDeleteConfirm(false);
         setIsDeleting(false);
-        
+
         // Show undo toast if deletion was successful
         if (result.deletionLogId) {
           sonnerToast.custom(
@@ -109,53 +109,42 @@ export default function TripHeader({ trip }: TripHeaderProps) {
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        setOpenEditModal(false);
-      }
-    };
+    if (e.target === e.currentTarget) {
+      setOpenEditModal(false);
+    }
+  };
 
   return (
     <>
-      <Card 
+      <Card
         className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
         style={{ borderColor: colors.border }}
       >
         {/* Header Section with Gradient */}
-        <div 
+        <div
           className="px-6 py-8 text-white"
           style={{
             background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`
           }}
         >
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/dashboard')}
-            className="mb-4 flex items-center gap-2 text-white hover:bg-white/10 -ml-2 cursor-pointer transition-all"
-            aria-label="Back to dashboard"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="font-medium">Back to Dashboard</span>
-          </Button>
+          <div className="flex justify-between items-center">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/dashboard')}
+              className="mb-4 flex items-center gap-2 text-white hover:bg-white/10 -ml-2 cursor-pointer transition-all"
+              aria-label="Back to dashboard"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-medium">Back to Dashboard</span>
+            </Button>
 
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold mb-2 break-words">{trip.tripName}</h1>
-              
-              {trip.tripDescription && (
-                <div className="flex items-start gap-2 mt-3 text-white/90">
-                  <FileText className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                  <p className="text-base leading-relaxed">{trip.tripDescription}</p>
-                </div>
-              )}
-            </div>
-            
             {/* Action Buttons */}
             <div className="flex gap-2 flex-shrink-0">
               <GradientButton
                 variant="edit"
-                size="md"
+                size="sm"
                 onClick={() => setOpenEditModal(true)}
                 className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm transition-all cursor-pointer"
               >
@@ -164,7 +153,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
               </GradientButton>
               <GradientButton
                 variant="delete"
-                size="md"
+                size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
                 className="flex items-center gap-2 bg-red-600/80 hover:bg-red-700 border-red-500/30 text-white backdrop-blur-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -174,6 +163,19 @@ export default function TripHeader({ trip }: TripHeaderProps) {
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </span>
               </GradientButton>
+            </div>
+          </div>
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold mb-2 break-words">{trip.tripName}</h1>
+
+              {trip.tripDescription && (
+                <div className="flex items-start gap-2 mt-3 text-white/90">
+                  <FileText className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <p className="text-base leading-relaxed">{trip.tripDescription}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -190,14 +192,14 @@ export default function TripHeader({ trip }: TripHeaderProps) {
           {/* Trip Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Destination */}
-            <div 
+            <div
               className="flex items-center gap-3 p-4 rounded-lg"
-              style={{ 
+              style={{
                 backgroundColor: `${colors.primary}10`,
                 borderLeft: `4px solid ${colors.primary}`
               }}
             >
-              <div 
+              <div
                 className="p-2 rounded-full"
                 style={{ backgroundColor: colors.primary }}
               >
@@ -205,7 +207,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Destination</p>
-                <p 
+                <p
                   className="text-lg font-semibold mt-0.5"
                   style={{ color: colors.textMain }}
                 >
@@ -215,14 +217,14 @@ export default function TripHeader({ trip }: TripHeaderProps) {
             </div>
 
             {/* Duration */}
-            <div 
+            <div
               className="flex items-center gap-3 p-4 rounded-lg"
-              style={{ 
+              style={{
                 backgroundColor: `${colors.accent}10`,
                 borderLeft: `4px solid ${colors.accent}`
               }}
             >
-              <div 
+              <div
                 className="p-2 rounded-full"
                 style={{ backgroundColor: colors.accent }}
               >
@@ -230,7 +232,7 @@ export default function TripHeader({ trip }: TripHeaderProps) {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</p>
-                <p 
+                <p
                   className="text-lg font-semibold mt-0.5"
                   style={{ color: colors.textMain }}
                 >
@@ -241,19 +243,19 @@ export default function TripHeader({ trip }: TripHeaderProps) {
           </div>
 
           {/* Date Range */}
-          <div 
+          <div
             className="mt-6 p-4 rounded-lg"
             style={{ backgroundColor: colors.background }}
           >
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-2">
-                <Calendar 
+                <Calendar
                   className="h-5 w-5"
                   style={{ color: colors.secondary }}
                 />
                 <div>
                   <p className="text-xs font-medium text-gray-500">Start Date</p>
-                  <p 
+                  <p
                     className="text-sm font-semibold mt-0.5"
                     style={{ color: colors.textMain }}
                   >
@@ -262,19 +264,19 @@ export default function TripHeader({ trip }: TripHeaderProps) {
                 </div>
               </div>
 
-              <div 
+              <div
                 className="hidden sm:block h-12 w-px"
                 style={{ backgroundColor: colors.border }}
               />
 
               <div className="flex items-center gap-2">
-                <Calendar 
+                <Calendar
                   className="h-5 w-5"
                   style={{ color: colors.secondary }}
                 />
                 <div>
                   <p className="text-xs font-medium text-gray-500">End Date</p>
-                  <p 
+                  <p
                     className="text-sm font-semibold mt-0.5"
                     style={{ color: colors.textMain }}
                   >
@@ -289,9 +291,9 @@ export default function TripHeader({ trip }: TripHeaderProps) {
 
       {/* Edit Trip Modal */}
       {openEditModal && (
-        <div 
-        onClick={(e) => handleBackdropClick(e)}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
+        <div
+          onClick={(e) => handleBackdropClick(e)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center pt-20 overflow-y-auto">
           <div className="relative max-w-xl w-full mx-4 mt-8">
             <EditTripModal
               tripId={trip._id?.toString()!}

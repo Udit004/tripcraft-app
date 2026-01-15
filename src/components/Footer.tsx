@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -8,10 +9,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="gradient-primary w-10 h-10 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-white">TripCraft</span>
+              <Image src="/images/logo.png" alt="TripCraft Logo" width={50} height={50} />
+              <span className="text-2xl font-bold text-white">Trip<span className='text-2xl font-extrabold text-teal-400'>Craft</span></span>
             </div>
             <p className="text-slate-400 text-sm">
               Plan, explore, and craft your perfect journey with confidence.

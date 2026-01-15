@@ -9,6 +9,8 @@ import { Heart, Loader2 } from 'lucide-react';
 import ProtectRoutes from '@/components/ProtectRoutes';
 import { buttonGradients } from '@/constants/colors';
 import { DragProvider } from '@/context/DragContext';
+import Image from 'next/image';
+import { GradientLink } from '@/components/ui/GradientButton';
 
 export default function ActivityPoolPage() {
     const { activities, loading, error, removeFromPool, moveToDay, refreshPool } = useActivityPool();
@@ -41,25 +43,57 @@ export default function ActivityPoolPage() {
             <DragProvider>
                 <div className="min-h-screen bg-white py-8 px-4">
                     <div className="max-w-7xl mx-auto">
-                        {/* Header */}
-                        <header className="text-start mb-12 ">
-                            <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{
-                                background: `linear-gradient(to right, ${buttonGradients.primary.from}, ${buttonGradients.primary.to})`,
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text',
-                            }}>
-                                Activity Pool
-                            </h1>
-                            <p className="text-lg max-w-2xl" style={{ color: '#6B7280' }}>
-                                Your saved activities ready to be added to trips
-                            </p>
-                            {activities.length > 0 && (
-                                <div className="mt-4 text-sm" style={{ color: '#6B7280' }}>
-                                    {activities.length} {activities.length === 1 ? 'activity' : 'activities'} saved
-                                </div>
-                            )}
-                        </header>
+                        {/* ================= HERO HEADER ================= */}
+                        <section className="relative overflow-hidden rounded-2xl mb-12">
+
+                            {/* Background Image */}
+                            <Image
+                                src="/images/poolPage/heroImage.png"
+                                alt="Saved travel activities and experiences"
+                                fill
+                                priority
+                                className="object-cover object-center"
+                            />
+
+                            {/* Gradient Overlay */}
+                            <div
+                                className="absolute inset-0"
+                                style={{
+                                    background: ` linear-gradient(
+                                        135deg,
+                                    rgba(30, 58, 138, 0.8),
+                                    rgba(14, 165, 164, 0.8)
+                                    )
+                                `,
+                                }}
+                            />
+
+                            {/* Header Content */}
+                            <header className="relative z-10 px-6 py-16 md:py-20 text-start">
+
+                                <h1
+                                    className="text-4xl md:text-5xl font-bold mb-4"
+                                    style={{
+                                        color: '#FFFFFF',
+                                    }}
+                                >
+                                    Activity Pool
+                                </h1>
+
+                                <p className="text-lg max-w-2xl text-gray-200">
+                                    Your saved activities ready to be added to trips
+                                </p>
+
+                                {activities.length > 0 && (
+                                    <div className="mt-4 text-sm text-gray-300">
+                                        {activities.length}{' '}
+                                        {activities.length === 1 ? 'activity' : 'activities'} saved
+                                    </div>
+                                )}
+
+                            </header>
+                        </section>
+
 
                         {/* Loading State */}
                         {loading && (
@@ -93,8 +127,8 @@ export default function ActivityPoolPage() {
                         {/* Empty State */}
                         {!loading && !error && activities.length === 0 && (
                             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                                <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Heart className="h-10 w-10 text-purple-600" />
+                                <div className="w-20 h-20 bg-gradient-to-br from-teal-50 to-teal-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Heart className="h-10 w-10 text-teal-600" />
                                 </div>
                                 <h3 className="text-2xl font-semibold text-gray-800 mb-3">
                                     Your Activity Pool is Empty
@@ -103,12 +137,13 @@ export default function ActivityPoolPage() {
                                     Start exploring destinations and add activities to your pool.
                                     You can then easily add them to your trip itineraries later!
                                 </p>
-                                <a
+                                <GradientLink
                                     href="/explore"
-                                    className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-shadow"
+                                    variant='primary'
+                                    className="inline-block px-8 py-3"
                                 >
                                     Explore Activities
-                                </a>
+                                </GradientLink>
                             </div>
                         )}
 

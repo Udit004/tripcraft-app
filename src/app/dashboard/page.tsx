@@ -19,6 +19,7 @@ import mongoose from 'mongoose';
 import { toast } from '@/lib/toast';
 import { toast as sonnerToast } from 'sonner';
 import UndoToast from '@/components/UndoToast';
+import Image from 'next/image';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -139,11 +140,45 @@ export default function Dashboard() {
     <ProtectRoutes>
       <div className="min-h-screen py-8 px-4" style={{ backgroundColor: colors.background }}>
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <DashboardHeader onCreateTrip={handleOpenCreateModal} />
+          {/* ================= HERO SECTION ================= */}
+          <section className="relative mb-12 overflow-hidden rounded-2xl">
 
-          {/* Stats */}
-          {!loading && trips.length > 0 && <DashboardStats trips={trips} />}
+            {/* Background Image */}
+            <Image
+              src="/images/dashboard/heroImage.png"
+              alt="Travel dashboard background"
+              fill
+              priority
+              className="object-cover object-center"
+            />
+
+            {/* Overlay */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+                  linear-gradient(
+                    135deg,
+                    rgba(30, 58, 138, 0.88),
+                    rgba(14, 165, 164, 0.88)
+                  )
+                `,
+              }}
+            />
+
+            {/* Content */}
+            <div className="relative z-10 px-6 py-10 md:py-14">
+
+              {/* Header */}
+              <DashboardHeader onCreateTrip={handleOpenCreateModal} />
+
+              {/* Stats */}
+              {!loading && trips.length > 0 && (
+                <DashboardStats trips={trips} />
+              )}
+
+            </div>
+          </section>
 
           {/* Error */}
           {error && <ErrorAlert message={error} />}

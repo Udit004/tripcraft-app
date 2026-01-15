@@ -50,6 +50,7 @@ export default function ExploreForm({ onSearch, isLoading }: ExploreFormProps) {
         
         <GradientButton
           type="submit"
+          variant='cta'
           disabled={isLoading || destination.trim().length === 0}
           className={getButtonClasses('primary', 'px-8 py-3 h-auto')}
         >

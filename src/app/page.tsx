@@ -14,10 +14,20 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#1E3A8A] via-[#1E40AF] to-[#0EA5A4] overflow-hidden">
+      <section className="relative px-10 md:px-20 overflow-hidden"
+      style={{
+            background: `
+        linear-gradient(
+          135deg,
+          rgba(30, 58, 138, 0.85),
+          rgba(14, 165, 164, 0.85)
+        )
+      `,
+          }}
+      >
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMi4yMS0xLjc5IDQtNCA0cy00LTEuNzktNC00IDEuNzktNCA0LTQgNCAxLjc5IDQgNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>

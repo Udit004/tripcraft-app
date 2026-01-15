@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Menu, X, Heart } from 'lucide-react';
 import { colors } from '@/constants/colors';
 import { getPoolCount } from '@/services/activityPoolService';
+import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
@@ -47,11 +48,9 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#1E3A8A] to-[#0EA5A4] rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="text-white font-bold text-lg">T</span>
-            </div>
-            <span className="text-xl font-bold text-[#0F172A]">
-              TripCraft
+              <Image src="/images/logo.png" alt="TripCraft Logo" width={50} height={50} />
+            <span className="text-xl font-semibold text-[#0F172A]">
+              Trip<span className='text-2xl font-bold text-teal-800'>Craft</span>
             </span>
           </Link>
 
