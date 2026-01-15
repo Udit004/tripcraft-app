@@ -19,6 +19,7 @@ import { toast as sonnerToast } from 'sonner';
 import UndoToast from '@/components/UndoToast';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { colors } from '@/constants/colors';
+import { useTrip } from '@/context/TripContext';
 
 
 export default function ItineraryPage({
@@ -28,6 +29,7 @@ export default function ItineraryPage({
 }) {
   const router = useRouter();
   const { tripSlug, daySlug } = use(params);
+  const { trip } = useTrip();
 
   const [itineraryData, setItineraryData] = useState<IItineraryDay | null>(null);
   const [activityData, setActivityData] = useState<IActivity[]>([]);
@@ -72,6 +74,15 @@ export default function ItineraryPage({
       fetchItineraryDayById();
     }
   }, [tripSlug, daySlug]);
+
+  // Listen for activity pool changes
+  useEffect(() => {
+    const handlePoolChange = () => {
+      fetchItineraryDayById();
+    };
+    window.addEventListener('activity-pool-changed', handlePoolChange);
+    return () => window.removeEventListener('activity-pool-changed', handlePoolChange);
+  }, []);
 
   const handleAddActivity = async (activityData: any) => {
     try {
@@ -266,7 +277,7 @@ export default function ItineraryPage({
 
   // Success State
   return (
-    <div className="min-h-screen bg-white py-8 px-4">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-5xl mx-auto">
         {/* Header Section */}
         <div
