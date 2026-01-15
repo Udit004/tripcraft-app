@@ -49,7 +49,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tri
 
         // Create new activity
         const newActivity = await Activity.create({
+            userId: user._id,
             itineraryDayId: dayId,
+            isInPool: false,
             activityType: activityType as any,
             title,
             description,
@@ -62,7 +64,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tri
         // Return created activity
         const activityResponse: IActivityResponse = {
             _id: newActivity._id.toString(),
-            itineraryDayId: newActivity.itineraryDayId.toString(),
+            userId: newActivity.userId.toString(),
+            itineraryDayId: newActivity.itineraryDayId?.toString(),
+            isInPool: newActivity.isInPool,
             activityType: newActivity.activityType,
             title: newActivity.title,
             description: newActivity.description,
@@ -143,7 +147,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
         
         const activitiesResponse: IActivityResponse[] = sortedActivities.map((activity: any) => ({
             _id: activity._id.toString(),
-            itineraryDayId: activity.itineraryDayId.toString(),
+            userId: activity.userId.toString(),
+            itineraryDayId: activity.itineraryDayId?.toString(),
+            isInPool: activity.isInPool,
             activityType: activity.activityType,    
             title: activity.title,
             description: activity.description,
