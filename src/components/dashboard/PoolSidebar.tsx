@@ -44,15 +44,14 @@ export default function PoolSidebar({ tripId, onActivityMoved }: PoolSidebarProp
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = async (dayId: string) => {
-    if (!selectedActivity) return;
-
-    const success = await moveToDay(selectedActivity._id.toString(), tripId, dayId);
+  const handleModalSubmit = async (activityId: string, tripIdParam: string, dayId: string): Promise<boolean> => {
+    const success = await moveToDay(activityId, tripIdParam, dayId);
     if (success) {
       setIsModalOpen(false);
       setSelectedActivity(null);
       onActivityMoved?.();
     }
+    return success;
   };
 
   if (!isOpen) {
@@ -197,7 +196,7 @@ export default function PoolSidebar({ tripId, onActivityMoved }: PoolSidebarProp
             setSelectedActivity(null);
           }}
           activity={selectedActivity}
-          onSubmit={handleModalSubmit}
+          onConfirm={handleModalSubmit}
         />
       )}
 

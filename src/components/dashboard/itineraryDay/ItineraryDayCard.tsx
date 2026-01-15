@@ -51,7 +51,9 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
     if (source === 'pool' || dragSource === 'pool') {
       e.dataTransfer.dropEffect = 'move'
       setIsDragOver(true)
-      setDragOverDayId(day._id.toString())
+      if (day._id) {
+        setDragOverDayId(day._id.toString())
+      }
     }
   }
 
@@ -80,6 +82,11 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
     try {
       setIsAdding(true)
       
+      if (!day._id) {
+        toast.error('Invalid day ID')
+        return
+      }
+
       const success = await moveActivityToDay(
         draggedActivity._id.toString(),
         tripId,
