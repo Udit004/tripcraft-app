@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X, Heart } from 'lucide-react';
+import { Menu, X, MapPin } from 'lucide-react';
 import { colors } from '@/constants/colors';
 import { getPoolCount } from '@/services/activityPoolService';
 import Image from 'next/image';
@@ -15,26 +15,26 @@ export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [poolCount, setPoolCount] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fetch pool count when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       getPoolCount().then(setPoolCount).catch(() => setPoolCount(0));
     }
-  }, [isAuthenticated, pathname]); // Re-fetch when route changes
+  }, [isAuthenticated, pathname]);
 
   // Helper function to check if a route is active
   const isActive = (href: string) => pathname === href;
-
-  // Helper function to get active link styles
-  const getNavLinkStyles = (href: string) => {
-    const isCurrentPage = isActive(href);
-    return {
-      color: isCurrentPage ? colors.primary : colors.textMuted,
-      borderBottom: isCurrentPage ? `3px solid ${colors.primary}` : 'none',
-      paddingBottom: '8px',
-    };
-  };
 
   const handleLogout = () => {
     logout();
@@ -42,55 +42,98 @@ export default function Navbar() {
     router.push('/');
   };
 
+  const navLinks = [
+    { href: '/about', label: 'About' },
+    { href: '/dashboard', label: 'My Trips' },
+    { href: '/explore', label: 'Explore' },
+  ];
+
   return (
-    <nav className="bg-white border-b border-[#E5E7EB] sticky top-0 z-50">
+    <nav 
+      className={`sticky top-0 z-50 transition-all duration-300 backdrop-blur-sm ${
+        scrolled ? 'shadow-lg' : 'shadow-sm'
+      }`}
+      style={{ 
+        backgroundColor: scrolled ? 'rgba(248, 250, 252, 0.95)' : colors.background,
+        borderBottom: `1px solid ${scrolled ? colors.border : 'rgba(229, 231, 235, 0.5)'}`
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-              <Image src="/images/logo.png" alt="TripCraft Logo" width={50} height={50} />
-            <span className="text-xl font-semibold text-[#0F172A]">
-              Trip<span className='text-2xl font-bold text-teal-800'>Craft</span>
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 group hover:opacity-80 transition-opacity"
+          >
+            <div className="relative w-10 h-10 sm:w-12 sm:h-12">
+              <Image 
+                src="/images/logo.png" 
+                alt="TripCraft Logo" 
+                fill
+                className="object-contain"
+              />
+            </div>
+            <span className="text-lg sm:text-xl font-semibold" style={{ color: colors.textMain }}>
+              Trip<span className="text-xl sm:text-2xl font-bold" style={{ color: colors.secondary }}>Craft</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link 
-              href="/about" 
-              className="font-medium transition-colors"
-              style={getNavLinkStyles('/about')}
-            >
-              About
-            </Link>
-            <Link 
-              href="/dashboard" 
-              className="font-medium transition-colors"
-              style={getNavLinkStyles('/dashboard')}
-            >
-              My Trips
-            </Link>
-            <Link 
-              href="/explore" 
-              className="font-medium transition-colors"
-              style={getNavLinkStyles('/explore')}
-            >
-              Explore
-            </Link>
-            {isAuthenticated && (
-              <Link 
-                href="/activity-pool" 
-                className="font-medium transition-colors relative"
-                style={getNavLinkStyles('/activity-pool')}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-4 py-2 font-medium text-sm transition-all duration-200 relative group ${
+                  isActive(link.href) ? '' : 'hover:text-opacity-70'
+                }`}
+                style={{ 
+                  color: isActive(link.href) ? colors.primary : colors.textMuted 
+                }}
               >
-                <div className="flex items-center gap-1">
-                  Pool
-                  {poolCount > 0 && (
-                    <span className="absolute -top-2 -right-4 bg-teal-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-                      {poolCount > 99 ? '99+' : poolCount}
-                    </span>
-                  )}
-                </div>
+                {link.label}
+                {/* Active indicator - underline */}
+                <span 
+                  className={`absolute bottom-0 left-0 w-full h-0.5 transition-all duration-200 ${
+                    isActive(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`}
+                  style={{ 
+                    backgroundColor: isActive(link.href) ? colors.primary : colors.secondary,
+                    opacity: isActive(link.href) ? 1 : 0.5
+                  }}
+                />
+              </Link>
+            ))}
+            
+            {isAuthenticated && (
+              <Link
+                href="/activity-pool"
+                className={`px-4 py-2 font-medium text-sm transition-all duration-200 relative group flex items-center gap-1.5 ${
+                  isActive('/activity-pool') ? '' : 'hover:text-opacity-70'
+                }`}
+                style={{ 
+                  color: isActive('/activity-pool') ? colors.primary : colors.textMuted 
+                }}
+              >
+                Pool
+                {poolCount > 0 && (
+                  <span 
+                    className="min-w-[20px] h-5 px-1.5 flex items-center justify-center text-white text-xs rounded-full font-semibold shadow-sm"
+                    style={{ backgroundColor: colors.secondary }}
+                  >
+                    {poolCount > 99 ? '99+' : poolCount}
+                  </span>
+                )}
+                {/* Active indicator */}
+                <span 
+                  className={`absolute bottom-0 left-0 w-full h-0.5 transition-all duration-200 ${
+                    isActive('/activity-pool') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`}
+                  style={{ 
+                    backgroundColor: isActive('/activity-pool') ? colors.primary : colors.secondary,
+                    opacity: isActive('/activity-pool') ? 1 : 0.5
+                  }}
+                />
               </Link>
             )}
           </div>
@@ -99,12 +142,28 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-[#475569] px-3">
-                  {user?.username}
-                </span>
+                <div 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+                  style={{ 
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: colors.secondary }}>
+                    {user?.username?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium" style={{ color: colors.textMain }}>
+                    {user?.username}
+                  </span>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="px-5 py-2 rounded-lg text-[#1E3A8A] border border-[#E5E7EB] hover:border-[#1E3A8A] hover:bg-[#F8FAFC] transition-all font-medium text-sm"
+                  className="px-5 py-2 rounded-lg border transition-all font-medium text-sm hover:shadow-sm"
+                  style={{ 
+                    color: colors.primary,
+                    borderColor: colors.border,
+                    backgroundColor: colors.surface
+                  }}
                 >
                   Sign Out
                 </button>
@@ -113,13 +172,18 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-5 py-2 rounded-lg text-[#475569] hover:text-[#1E3A8A] hover:bg-[#F8FAFC] transition-all font-medium text-sm"
+                  className="px-5 py-2 rounded-lg transition-all font-medium text-sm hover:bg-opacity-80"
+                  style={{ 
+                    color: colors.textMuted,
+                    backgroundColor: 'transparent'
+                  }}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signUp"
-                  className="px-5 py-2 rounded-lg bg-[#1E3A8A] text-white hover:bg-[#1E40AF] transition-colors font-medium text-sm"
+                  className="px-5 py-2 rounded-lg text-white transition-all font-medium text-sm hover:shadow-md hover:scale-105"
+                  style={{ backgroundColor: colors.primary }}
                 >
                   Get Started
                 </Link>
@@ -130,7 +194,11 @@ export default function Navbar() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-[#475569] hover:bg-[#F8FAFC] transition-colors"
+            className="md:hidden p-2 rounded-lg transition-colors"
+            style={{ 
+              color: colors.textMuted,
+              backgroundColor: mobileMenuOpen ? colors.surface : 'transparent'
+            }}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -143,87 +211,105 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-[#E5E7EB]">
+          <div 
+            className="md:hidden py-4 border-t animate-in slide-in-from-top duration-200"
+            style={{ 
+              borderColor: colors.border,
+              backgroundColor: colors.surface
+            }}
+          >
             <div className="flex flex-col gap-1">
-              <Link 
-                href="/about" 
-                className="font-medium py-3 px-3 rounded-lg transition-colors"
-                style={{
-                  color: isActive('/about') ? colors.primary : colors.textMuted,
-                  backgroundColor: isActive('/about') ? colors.background : 'transparent',
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link 
-                href="/dashboard" 
-                className="font-medium py-3 px-3 rounded-lg transition-colors"
-                style={{
-                  color: isActive('/dashboard') ? colors.primary : colors.textMuted,
-                  backgroundColor: isActive('/dashboard') ? colors.background : 'transparent',
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                My Trips
-              </Link>
-              <Link 
-                href="/explore" 
-                className="font-medium py-3 px-3 rounded-lg transition-colors"
-                style={{
-                  color: isActive('/explore') ? colors.primary : colors.textMuted,
-                  backgroundColor: isActive('/explore') ? colors.background : 'transparent',
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Explore
-              </Link>
-              {isAuthenticated && (
-                <Link 
-                  href="/activity-pool" 
-                  className="font-medium py-3 px-3 rounded-lg transition-colors flex items-center gap-2"
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`font-medium py-3 px-4 rounded-lg transition-all duration-200 ${
+                    isActive(link.href) ? 'shadow-sm' : ''
+                  }`}
                   style={{
-                    color: isActive('/activity-pool') ? colors.primary : colors.textMuted,
-                    backgroundColor: isActive('/activity-pool') ? colors.background : 'transparent',
+                    color: isActive(link.href) ? colors.primary : colors.textMuted,
+                    backgroundColor: isActive(link.href) ? colors.background : 'transparent',
+                    fontWeight: isActive(link.href) ? '600' : '500',
                   }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Heart className="h-4 w-4" />
-                  Activity Pool
+                  {link.label}
+                </Link>
+              ))}
+              
+              {isAuthenticated && (
+                <Link
+                  href="/activity-pool"
+                  className={`font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-between ${
+                    isActive('/activity-pool') ? 'shadow-sm' : ''
+                  }`}
+                  style={{
+                    color: isActive('/activity-pool') ? colors.primary : colors.textMuted,
+                    backgroundColor: isActive('/activity-pool') ? colors.background : 'transparent',
+                    fontWeight: isActive('/activity-pool') ? '600' : '500',
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span>Activity Pool</span>
                   {poolCount > 0 && (
-                    <span className="bg-pink-500 text-white text-xs rounded-full px-2 py-0.5 font-semibold">
-                      {poolCount}
+                    <span 
+                      className="min-w-[24px] h-6 px-2 flex items-center justify-center text-white text-xs rounded-full font-semibold"
+                      style={{ backgroundColor: colors.secondary }}
+                    >
+                      {poolCount > 99 ? '99+' : poolCount}
                     </span>
                   )}
                 </Link>
               )}
-              
-              <div className="border-t border-[#E5E7EB] my-2"></div>
-              
+
+              <div className="my-2" style={{ borderTop: `1px solid ${colors.border}` }}></div>
+
               {isAuthenticated ? (
                 <>
-                  <span className="text-sm text-[#475569] py-3 px-3">
-                    Signed in as {user?.username}
-                  </span>
+                  <div 
+                    className="flex items-center gap-3 py-3 px-4 rounded-lg mb-2"
+                    style={{ backgroundColor: colors.background }}
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: colors.secondary }}>
+                      {user?.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs" style={{ color: colors.textMuted }}>Signed in as</span>
+                      <span className="text-sm font-semibold" style={{ color: colors.textMain }}>
+                        {user?.username}
+                      </span>
+                    </div>
+                  </div>
                   <button
                     onClick={handleLogout}
-                    className="text-left text-[#1E3A8A] hover:bg-[#F8FAFC] font-medium py-3 px-3 rounded-lg transition-colors"
+                    className="text-left font-medium py-3 px-4 rounded-lg transition-all border"
+                    style={{ 
+                      color: colors.primary,
+                      borderColor: colors.border,
+                      backgroundColor: colors.surface
+                    }}
                   >
                     Sign Out
                   </button>
                 </>
               ) : (
                 <>
-                  <Link 
-                    href="/login" 
-                    className="text-[#475569] hover:text-[#1E3A8A] hover:bg-[#F8FAFC] font-medium py-3 px-3 rounded-lg transition-colors"
+                  <Link
+                    href="/login"
+                    className="font-medium py-3 px-4 rounded-lg transition-all text-center"
+                    style={{ 
+                      color: colors.textMuted,
+                      backgroundColor: 'transparent',
+                      border: `1px solid ${colors.border}`
+                    }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
-                  <Link 
-                    href="/signUp" 
-                    className="bg-[#1E3A8A] text-white hover:bg-[#1E40AF] font-medium py-3 px-3 rounded-lg text-center transition-colors mt-2"
+                  <Link
+                    href="/signUp"
+                    className="text-white font-medium py-3 px-4 rounded-lg text-center transition-all mt-2 shadow-md"
+                    style={{ backgroundColor: colors.primary }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Get Started
