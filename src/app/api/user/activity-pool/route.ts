@@ -25,22 +25,41 @@ export async function POST(req: NextRequest) {
     try {
         await connectDB();
         const body: IAddToPoolRequest = await req.json();
-        const { exploreActivity } = body;
         
-        // Validation
-        if (!exploreActivity || !exploreActivity.title || !exploreActivity.category) {
+        // Support both old format (exploreActivity object) and new format (flat fields)
+        let activityData: any;
+        
+        if (body.exploreActivity) {
+            // Legacy format: { exploreActivity: { title, category, ... } }
+            activityData = body.exploreActivity;
+        } else {
+            // New format: { name, type, category, ... }
+            activityData = {
+                name: body.name,
+                type: body.type,
+                description: body.description,
+                location: body.location,
+                category: body.category,
+            };
+        }
+        
+        // Validation - support both 'title' (old) and 'name' (new)
+        const activityName = activityData.title || activityData.name;
+        const activityCategory = activityData.category;
+        
+        if (!activityName || !activityCategory) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: 'Please provide a valid explore activity with title and category',
+                    message: 'Please provide a valid activity with name/title and category',
                 } as IActivityApiResponse,
                 { status: 400 }
             );
         }
 
-        // Convert explore activity to pool activity format
+        // Convert to pool activity format (supports both old and new formats)
         const poolActivityData = convertExploreActivityToPoolActivity(
-            exploreActivity,
+            activityData,
             user._id.toString()
         );
 

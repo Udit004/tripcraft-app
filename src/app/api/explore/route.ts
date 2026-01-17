@@ -154,7 +154,7 @@ async function getDestinationCoordinates(destination: string): Promise<GeoNameRe
  * Uses multiple API instances for reliability
  */
 async function fetchNearbyAttractions(lat: number, lon: number): Promise<OSMPlace[]> {
-  const radius = 3000; // 3km radius (reduced from 5km to reduce load)
+  const radius = 5000; // 5km radius (increased from 3km to expand search area)
   
   // Simplified Overpass QL query for better performance
   const query = `

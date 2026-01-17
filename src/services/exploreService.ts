@@ -1,5 +1,5 @@
 import apiClient  from './apiClient';
-import { ExploreActivity } from '@/types/activity';
+import { ExploreActivity } from '@/types/explore';
 
 // Re-export for backward compatibility
 export type { ExploreActivity };

@@ -57,8 +57,8 @@ export interface IActivityApiResponse {
     error?: string;
 }
 
-// Explore API response type (from OpenStreetMap API)
-export interface ExploreActivity {
+// Legacy Explore API response type (from old explore system)
+export interface LegacyExploreActivity {
     title: string;
     category: 'nature' | 'culture' | 'sightseeing' | 'general';
     location: string;
@@ -66,7 +66,27 @@ export interface ExploreActivity {
     confidence: 'high' | 'medium' | 'low';
 }
 
+// New Explore API response type (from new MapLibre explore system)
+export interface NewExploreActivity {
+    id: string;
+    name: string;
+    type: string;
+    description?: string;
+    location?: { lat: number; lng: number };
+    address?: string;
+    category: string;
+    rating?: number;
+}
+
+// Union type for backward compatibility
+export type ExploreActivity = LegacyExploreActivity | NewExploreActivity;
+
 // Request type for adding explore activity to pool
 export interface IAddToPoolRequest {
-    exploreActivity: ExploreActivity;
+    exploreActivity?: LegacyExploreActivity; // Legacy format
+    name?: string;        // New format fields
+    type?: string;
+    description?: string;
+    location?: string;    // Address as string
+    category?: string;
 }
