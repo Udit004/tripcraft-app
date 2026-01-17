@@ -45,7 +45,7 @@ export default function ExploreResults({ data }: ExploreResultsProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {activities.map((activity, index) => (
-              <ActivityCard key={`${activity.title}-${index}`} activity={activity} />
+              <ActivityCard key={`${activity.name}-${index}`} activity={activity} />
             ))}
           </div>
         </>

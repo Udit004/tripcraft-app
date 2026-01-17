@@ -1,21 +1,45 @@
 'use client';
 
 import Image from 'next/image';
-import { useExplore } from './hooks/useExplore';
-import ExploreForm from './ExploreForm';
-import ExploreResults from './ExploreResults';
-import { AlertCircle, Compass } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { colors, buttonGradients } from '@/constants/colors';
+import { colors } from '@/constants/colors';
+import { ModeToggle } from './ModeToggle';
+import { SearchBar } from './SearchBar';
+import { ActivityFilters } from './ActivityFilters';
+import { MapView } from './MapView';
+import { ResultsList } from './ResultsList';
+import { useExploreState } from './hooks/useExploreState';
 
+/**
+ * Main Explore page client component
+ * Orchestrates all exploration modes and synchronizes map with results
+ */
 export default function ExploreClient() {
-  const { data, isLoading, error, search } = useExplore();
+  const {
+    mode,
+    setMode,
+    searchQuery,
+    handleSearch,
+    activeFilters,
+    handleFiltersChange,
+    activities,
+    isLoadingActivities,
+    viewport,
+    setViewport,
+    handleMapClick,
+    hoveredActivityId,
+    selectedActivityId,
+    handleActivityClick,
+    handleActivityHover,
+    handleSaveActivity,
+  } = useExploreState();
+
+  const showMap = mode === 'map' || mode === 'combined';
+  const showList = mode === 'search' || mode === 'combined';
 
   return (
-    <div className="space-y-16">
-
+    <div className="space-y-6">
       {/* ================= HERO SECTION ================= */}
-      <section className="relative overflow-hidden rounded-2xl">
+      <section className="relative overflow-hidden rounded-2xl min-h-[500px] flex items-center justify-center">
 
         {/* Background Image */}
         <Image
@@ -41,7 +65,7 @@ export default function ExploreClient() {
         />
 
         {/* Content */}
-        <div className="relative z-10 px-6 py-20 md:py-28 text-center">
+        <div className="relative z-10 px-6 py-20 md:py-28 text-center max-w-4xl mx-auto">
 
           {/* Header */}
           <h1
@@ -52,69 +76,156 @@ export default function ExploreClient() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Explore Destinations
+            Explore the World
           </h1>
 
           <p
             className="text-lg max-w-2xl mx-auto mb-10"
             style={{ color: '#E5E7EB' }}
           >
-            Search for any city or destination to discover popular attractions,
-            museums, parks, monuments, and cultural landmarks.
+            Discover amazing places, plan your perfect trip
           </p>
 
-          {/* Search Form */}
-          <div className="max-w-3xl mx-auto">
-            <ExploreForm onSearch={search} isLoading={isLoading} />
+          {/* Mode Toggle */}
+          <div className="mb-6">
+            <ModeToggle mode={mode} onChange={setMode} />
           </div>
+
+          {/* Search Bar */}
+          <SearchBar
+            onSearch={handleSearch}
+            isLoading={isLoadingActivities}
+            placeholder="Search city, place, or landmark..."
+            sticky={false}
+          />
 
         </div>
       </section>
 
-      {/* ================= ERROR STATE ================= */}
-      {error && (
-        <Alert variant="destructive" className="max-w-2xl mx-auto">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {/* Activity Filters */}
+      {activities.length > 0 && (
+        <div className="mt-6">
+          <ActivityFilters
+            activeFilters={activeFilters}
+            onChange={handleFiltersChange}
+          />
+        </div>
       )}
 
-      {/* ================= LOADING ================= */}
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Compass className="h-12 w-12 animate-spin" style={{ color: colors.primary }} />
+      {/* Main Content - Map and Results */}
+      {activities.length > 0 && (
+        <div className="mt-8">
+          {mode === 'combined' ? (
+            // Combined mode: Side-by-side layout
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Map */}
+              <div className="h-[600px] lg:sticky lg:top-24">
+                <MapView
+                  activities={activities}
+                  viewport={viewport}
+                  onViewportChange={setViewport}
+                  onActivityClick={handleActivityClick}
+                  onMapClick={handleMapClick}
+                  highlightedActivityId={hoveredActivityId || undefined}
+                  className="h-full"
+                />
+              </div>
+
+              {/* Results */}
+              <div>
+                <ResultsList
+                  activities={activities}
+                  isLoading={isLoadingActivities}
+                  onActivityHover={handleActivityHover}
+                  onActivityClick={handleActivityClick}
+                  onSaveActivity={handleSaveActivity}
+                  scrollToActivityId={selectedActivityId || undefined}
+                />
+              </div>
+            </div>
+          ) : mode === 'map' ? (
+            // Map-only mode
+            <div className="h-[calc(100vh-300px)] min-h-[600px]">
+              <MapView
+                activities={activities}
+                viewport={viewport}
+                onViewportChange={setViewport}
+                onActivityClick={handleActivityClick}
+                onMapClick={handleMapClick}
+                highlightedActivityId={hoveredActivityId || undefined}
+                className="h-full"
+              />
+            </div>
+          ) : (
+            // Search-only mode
+            <ResultsList
+              activities={activities}
+              isLoading={isLoadingActivities}
+              onActivityHover={handleActivityHover}
+              onActivityClick={handleActivityClick}
+              onSaveActivity={handleSaveActivity}
+              scrollToActivityId={selectedActivityId || undefined}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!isLoadingActivities && activities.length === 0 && searchQuery && (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">🗺️</div>
+          <h3 className="text-2xl font-semibold mb-2" style={{ color: colors.textMain }}>
+            Ready to explore?
+          </h3>
           <p style={{ color: colors.textMuted }}>
-            Exploring destinations...
+            Search for a destination above to discover amazing places
           </p>
         </div>
       )}
 
-      {/* ================= RESULTS ================= */}
-      {!isLoading && !error && data && (
-        <ExploreResults data={data} />
-      )}
-
-      {/* ================= EMPTY STATE ================= */}
-      {!isLoading && !error && !data && (
-        <div className="text-center py-12 space-y-4">
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-full"
-            style={{
-              background: `linear-gradient(135deg, ${buttonGradients.primary.from}, ${buttonGradients.primary.to})`,
-            }}
-          >
-            <Compass className="h-8 w-8 text-white" />
-          </div>
-
-          <h3 className="text-xl font-semibold" style={{ color: colors.textMain }}>
-            Start Your Exploration
+      {/* Initial state */}
+      {!searchQuery && (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">✨</div>
+          <h3 className="text-2xl font-semibold mb-2" style={{ color: colors.textMain }}>
+            Start Your Adventure
           </h3>
-
-          <p className="max-w-md mx-auto" style={{ color: colors.textMuted }}>
-            Enter a destination above to discover amazing attractions,
-            landmarks, and places to visit around the world.
+          <p className="mb-8" style={{ color: colors.textMuted }}>
+            Search for any destination to begin exploring
           </p>
+          
+          {/* Feature highlights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+            <div className="p-6 rounded-lg" style={{ backgroundColor: colors.surface }}>
+              <div className="text-4xl mb-3">🔍</div>
+              <h4 className="font-semibold mb-2" style={{ color: colors.textMain }}>
+                Smart Search
+              </h4>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                Find cities, landmarks, and hidden gems with intelligent autocomplete
+              </p>
+            </div>
+            
+            <div className="p-6 rounded-lg" style={{ backgroundColor: colors.surface }}>
+              <div className="text-4xl mb-3">🗺️</div>
+              <h4 className="font-semibold mb-2" style={{ color: colors.textMain }}>
+                Interactive Map
+              </h4>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                Visualize locations and discover nearby attractions on the map
+              </p>
+            </div>
+            
+            <div className="p-6 rounded-lg" style={{ backgroundColor: colors.surface }}>
+              <div className="text-4xl mb-3">🎯</div>
+              <h4 className="font-semibold mb-2" style={{ color: colors.textMain }}>
+                Intent Filters
+              </h4>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                Filter by what matters - food, nature, culture, and more
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
