@@ -7,7 +7,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mx-20 mt-10 py-20 lg:py-28 rounded-lg ">
+      <section className="relative overflow-hidden mx-5 md:mx-10 lg:mx-20 mt-10 py-20 lg:py-28 rounded-lg ">
 
         {/* Background Image */}
         <Image
