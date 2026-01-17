@@ -1,6 +1,7 @@
 // constants/colors.ts
 export const colors = {
   primary: '#1E3A8A',      // Deep Indigo/Blue
+  primaryLight: '#E0F2FE', // Light blue for highlights
   secondary: '#0EA5A4',    // Teal
   accent: '#F59E0B',       // Amber
   background: '#F8FAFC',   // Soft off-white
