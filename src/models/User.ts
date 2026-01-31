@@ -27,6 +27,24 @@ const UserSchema = new Schema<IUser>(
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
     },
+    // Profile fields (flattened for better MongoDB compatibility)
+    firstName: { type: String, trim: true },
+    lastName: { type: String, trim: true },
+    bio: { type: String, maxlength: [500, 'Bio must not exceed 500 characters'] },
+    avatar: { type: String },
+    phoneNumber: { type: String },
+    // Location
+    city: { type: String },
+    country: { type: String },
+    // Travel Preferences
+    travelStyles: [{ type: String, enum: ['adventure', 'leisure', 'cultural', 'budget', 'luxury', 'solo', 'family', 'business'] }],
+    budgetRange: { type: String, enum: ['budget', 'moderate', 'comfort', 'luxury'] },
+    interests: [{ type: String }],
+    accessibility: [{ type: String }],
+    // App Preferences
+    currency: { type: String, default: 'USD' },
+    language: { type: String, default: 'en' },
+    notifications: { type: Boolean, default: true },
   },
   {
     timestamps: true,
