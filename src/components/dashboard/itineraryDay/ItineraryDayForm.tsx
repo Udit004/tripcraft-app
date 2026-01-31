@@ -150,7 +150,7 @@ export default function ItineraryDayForm({
                     <GradientButton
                         type="submit"
                         variant={buttonText === 'Create Day' ? 'create' : 'edit'}
-                        disabled={loading}
+                        disabled={loading || (buttonText === 'Create Day' && doesExceed)}
                         fullWidth
                     >
                         {loading ? (
@@ -161,6 +161,8 @@ export default function ItineraryDayForm({
                                 </svg>
                                 {buttonText === 'Create Day' ? 'Creating Day...' : 'Updating Day...'}
                             </span>
+                        ) : buttonText === 'Create Day' && doesExceed ? (
+                            'Cannot Create - Update Trip Dates First'
                         ) : (
                             buttonText
                         )}

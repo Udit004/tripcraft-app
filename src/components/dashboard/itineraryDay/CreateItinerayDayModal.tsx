@@ -81,6 +81,13 @@ export default function CreateItineraryDayModal({ tripId, onClose, onSuccess, on
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        // Check if adding a new day would exceed trip duration
+        if (exceedsTripDuration) {
+            toast.error(`Cannot create more days! Your trip is only ${tripDurationDays} ${tripDurationDays === 1 ? 'day' : 'days'} long. Please update your trip dates first.`);
+            return;
+        }
+        
         setLoading(true)
         setError(null)
         try {
