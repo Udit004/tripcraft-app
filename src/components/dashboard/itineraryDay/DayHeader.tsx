@@ -14,24 +14,27 @@ interface DayHeaderProps {
 export default function DayHeader({ dayNumber, dayName, date, warnings }: DayHeaderProps) {
   return (
     <div>
-      <div className="flex items-baseline gap-3 mb-2">
+      <div className='grid grid-col-1 md:flex justify-between items-center'>
+        <div className="flex items-baseline gap-3 mb-2">
         <h2 className="text-3xl font-bold text-gray-50">
           Day {dayNumber}
         </h2>
         {dayName && (
-          <span className="text-lg font-semibold text-gray-100 text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+          <span className="text-lg font-semibold text-gray-100 text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md">
             {dayName}
           </span>
         )}
       </div>
       <div className="flex items-center gap-4 text-gray-600 mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-gray-400" />
-          <span className="font-medium text-gray-200">
+          <Calendar className="w-5 h-5 text-gray-100" />
+          <span className="font-medium text-gray-50">
             {format(new Date(date), 'EEEE, MMMM d, yyyy')}
           </span>
         </div>
       </div>
+      </div>
+      
 
       {/* Warnings Section */}
       {warnings.length > 0 && (

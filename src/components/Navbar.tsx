@@ -4,17 +4,17 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useActivityPoolContext } from '@/context/ActivityPoolContext';
 import { Menu, X, MapPin } from 'lucide-react';
 import { colors } from '@/constants/colors';
-import { getPoolCount } from '@/services/activityPoolService';
 import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, logout } = useAuth();
+  const { poolCount } = useActivityPoolContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [poolCount, setPoolCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   // Handle scroll effect
@@ -25,13 +25,6 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Fetch pool count when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      getPoolCount().then(setPoolCount).catch(() => setPoolCount(0));
-    }
-  }, [isAuthenticated, pathname]);
 
   // Helper function to check if a route is active
   const isActive = (href: string) => pathname === href;

@@ -10,6 +10,7 @@ import { isMealType, isRestType } from '@/constants/activityTypes'
 import { GradientButton } from '@/components/ui/GradientButton'
 import { toast as sonnerToast, toast } from 'sonner'
 import { useDrag } from '@/context/DragContext'
+import { useActivityPoolContext } from '@/context/ActivityPoolContext'
 import { moveActivityToDay } from '@/services/activityPoolService'
 
 interface ActivityListWithDnDProps {
@@ -43,6 +44,7 @@ export default function ActivityListWithDnD({
   const [isAddingFromPool, setIsAddingFromPool] = useState(false)
 
   const { draggedActivity, dragSource, clearDragState } = useDrag()
+  const { decrementPoolCount } = useActivityPoolContext()
 
   useEffect(() => {
     setActivities(initialActivities)
@@ -103,9 +105,8 @@ export default function ActivityListWithDnD({
 
         if (success) {
           toast.success(`Added "${draggedActivity.title}" to this day`)
-          // Trigger refresh via custom event
-          const event = new CustomEvent('activity-pool-changed')
-          window.dispatchEvent(event)
+          // Update navbar pool count
+          decrementPoolCount()
         } else {
           toast.error('Failed to add activity from pool')
         }
@@ -282,8 +283,8 @@ export default function ActivityListWithDnD({
 
                 if (success) {
                   toast.success(`Added "${draggedActivity.title}" to this day`)
-                  const event = new CustomEvent('activity-pool-changed')
-                  window.dispatchEvent(event)
+                  // Update navbar pool count
+                  decrementPoolCount()
                 } else {
                   toast.error('Failed to add activity from pool')
                 }

@@ -166,7 +166,7 @@ export default function SwipeableItem({
     >
       {/* Swipeable content */}
       <div
-        className={`relative z-10 bg-white ${
+        className={`relative z-10 ${
           isDragging ? '' : 'transition-transform duration-300 ease-out'
         }`}
         style={{

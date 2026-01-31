@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { colors } from '@/constants/colors';
 import { useActivityPool } from '@/components/pool/hooks/useActivityPool';
+import { useActivityPoolContext } from '@/context/ActivityPoolContext';
 import DraggablePoolActivityCard from '@/components/pool/DraggablePoolActivityCard';
 import AddToDayModal from '@/components/pool/AddToDayModal';
 import { IActivityResponse } from '@/types/activity';
@@ -22,6 +23,7 @@ export default function PoolSidebar({ tripId, onActivityMoved }: PoolSidebarProp
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { activities, loading, error, removeFromPool, moveToDay, refreshPool } = useActivityPool();
+  const { refreshPoolCount } = useActivityPoolContext();
 
   // Detect mobile/touch devices
   useEffect(() => {
@@ -49,6 +51,9 @@ export default function PoolSidebar({ tripId, onActivityMoved }: PoolSidebarProp
     if (success) {
       setIsModalOpen(false);
       setSelectedActivity(null);
+      // Refresh pool and navbar count
+      refreshPool();
+      refreshPoolCount();
       onActivityMoved?.();
     }
     return success;
