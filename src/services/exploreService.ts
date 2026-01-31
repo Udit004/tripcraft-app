@@ -1,27 +1,36 @@
 import apiClient  from './apiClient';
-import { ExploreActivity } from '@/types/explore';
+import { ExploreActivity, PaginationInfo, ExploreData } from '@/types/explore';
 
 // Re-export for backward compatibility
-export type { ExploreActivity };
+export type { ExploreActivity, PaginationInfo, ExploreData };
 
-export interface ExploreData {
+export interface ExploreParams {
   destination: string;
-  destinationInfo: string;
-  activities: ExploreActivity[];
+  page?: number;
+  limit?: number;
+  filters?: string[];
 }
 
 /**
- * Fetch tourist attractions for a destination
- * @param destination - City or location name
- * @returns Explore data with activities
+ * Fetch tourist attractions for a destination with pagination and filters
+ * @param params - Search parameters including destination, page, limit, and filters
+ * @returns Explore data with activities and pagination info
  */
-export async function fetchExploreData(destination: string): Promise<ExploreData> {
+export async function fetchExploreData(params: ExploreParams): Promise<ExploreData> {
+  const { destination, page = 1, limit = 12, filters = ['attraction', 'monument'] } = params;
+
   if (!destination || destination.trim().length === 0) {
     throw new Error('Destination is required');
   }
 
-  const params = new URLSearchParams({ destination: destination.trim() });
-  const response = await apiClient.get<ExploreData>(`/explore?${params.toString()}`);
+  const searchParams = new URLSearchParams({
+    destination: destination.trim(),
+    page: page.toString(),
+    limit: limit.toString(),
+    filters: filters.join(','),
+  });
+
+  const response = await apiClient.get<ExploreData>(`/explore?${searchParams.toString()}`);
   
   return response.data;
 }
@@ -31,27 +40,43 @@ export async function fetchExploreData(destination: string): Promise<ExploreData
  */
 export const exploreService = {
   /**
-   * Search for attractions in a destination
+   * Search for attractions in a destination with pagination and filters
    */
-  async search(destination: string): Promise<ExploreData> {
+  async search(params: ExploreParams): Promise<ExploreData> {
+    const { destination, page = 1, limit = 12, filters = ['attraction', 'monument'] } = params;
+
     if (!destination || destination.trim().length === 0) {
       return {
         destination: '',
         destinationInfo: '',
         activities: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: limit,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        appliedFilters: [],
       };
     }
 
     try {
-      const params = new URLSearchParams({ destination: destination.trim() });
-      const response = await apiClient.get<ExploreData>(`/explore?${params.toString()}`);
+      const searchParams = new URLSearchParams({
+        destination: destination.trim(),
+        page: page.toString(),
+        limit: limit.toString(),
+        filters: filters.join(','),
+      });
+
+      const response = await apiClient.get<ExploreData>(`/explore?${searchParams.toString()}`);
 
       if (!response.data) {
         throw new Error(`Failed to fetch explore data: ${response.statusText}`);
       }
 
-      const data: ExploreData = await response.data;
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error in exploreService.search:', error);
       throw error;

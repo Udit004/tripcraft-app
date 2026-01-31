@@ -35,6 +35,24 @@ export interface ExploreActivity {
   distance?: number;
   category: string;
   saved?: boolean;
+  confidence?: 'high' | 'medium' | 'low';
+}
+
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface ExploreData {
+  destination: string;
+  destinationInfo: string;
+  activities: ExploreActivity[];
+  pagination: PaginationInfo;
+  appliedFilters: string[];
 }
 
 export interface MapViewport {
@@ -48,3 +66,22 @@ export interface SearchSuggestion {
   address: string;
   coordinates: LocationCoordinates;
 }
+
+// Valid activity type filters
+export const VALID_ACTIVITY_TYPES = [
+  'attraction',
+  'monument',
+  'museum',
+  'park',
+  'nature',
+  'culture',
+  'sightseeing',
+  'restaurant',
+  'hotel',
+  'entertainment',
+  'historical',
+  'religious',
+  'shopping',
+] as const;
+
+export type ActivityType = typeof VALID_ACTIVITY_TYPES[number];
