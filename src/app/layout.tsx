@@ -1,4 +1,6 @@
 import { AuthProvider } from "@/context/AuthContext";
+import { ActivityPoolProvider } from "@/context/ActivityPoolContext";
+import { QueryProvider } from "@/providers/QueryProvider";
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -17,11 +19,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <Navbar />
-          {children}
-          <Toaster position="bottom-right" richColors />
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ActivityPoolProvider>
+              <Navbar />
+              {children}
+              <Toaster position="bottom-right" richColors />
+            </ActivityPoolProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

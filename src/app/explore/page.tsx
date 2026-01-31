@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import ExploreClient from '@/components/explore/ExploreClient';
 import { colors, buttonGradients } from '@/constants/colors';
 
@@ -17,8 +18,10 @@ export default function ExplorePage() {
       background: `linear-gradient(to bottom, ${colors.background}, ${colors.surface})`
     }}>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Client Component */}
-        <ExploreClient />
+        {/* Client Component with URL state adapter */}
+        <NuqsAdapter>
+          <ExploreClient />
+        </NuqsAdapter>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useActivityPool } from '@/components/pool/hooks/useActivityPool';
+import { useActivityPoolContext } from '@/context/ActivityPoolContext';
 import DraggablePoolActivityCard from '@/components/pool/DraggablePoolActivityCard';
 import AddToDayModal from '@/components/pool/AddToDayModal';
 import { IActivityResponse } from '@/types/activity';
@@ -14,8 +15,16 @@ import { GradientLink } from '@/components/ui/GradientButton';
 
 export default function ActivityPoolPage() {
     const { activities, loading, error, removeFromPool, moveToDay, refreshPool } = useActivityPool();
+    const { refreshPoolCount } = useActivityPoolContext();
     const [selectedActivity, setSelectedActivity] = useState<IActivityResponse | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Sync context pool count when component mounts or activities change
+    useEffect(() => {
+        if (!loading) {
+            refreshPoolCount();
+        }
+    }, [loading, refreshPoolCount]);
 
     const handleAddToDay = (activity: IActivityResponse) => {
         setSelectedActivity(activity);
