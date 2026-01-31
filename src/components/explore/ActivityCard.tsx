@@ -20,6 +20,7 @@ interface ActivityCardProps {
   onSave?: () => void;
   onHover?: (isHovering: boolean) => void;
   isHighlighted?: boolean;
+  isSaved?: boolean;
 }
 
 /**
@@ -33,31 +34,35 @@ export default function ActivityCard({
   onClick, 
   onSave,
   onHover,
-  isHighlighted = false 
+  isHighlighted = false,
+  isSaved = false
 }: ActivityCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
 
   // Check if this is the new ExploreActivity type
   const isNewType = 'location' in activity && typeof activity.location === 'object';
 
   const handleAddToPool = async () => {
+    // Don't add if already saved
+    if (isSaved) {
+      toast.info('Already saved to your pool');
+      return;
+    }
+
     try {
       setIsAdding(true);
       
       // Handle both old and new types
       if (onSave) {
-        onSave();
+        // onSave will handle incrementing pool count via useExploreState
+        await onSave();
       } else {
+        // Direct add to pool (old type) - needs manual increment
         await addToPool(activity as OldExploreActivity);
       }
       
-      setIsAdded(true);
       toast.success('Activity added to your pool');
       onAddToPool?.(activity);
-      
-      // Reset after 2 seconds
-      setTimeout(() => setIsAdded(false), 2000);
     } catch (error: unknown) {
       console.error('Error adding to pool:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -121,13 +126,11 @@ export default function ActivityCard({
 
   return (
     <Card 
-      className="hover:shadow-lg transition-all duration-200 h-full border-2 flex flex-col"
+      className="hover:shadow-lg transition-all duration-200 h-full border-2 flex flex-col mb-0"
       style={{ 
         borderColor: isHighlighted ? colors.primary : colors.border,
         backgroundColor: isHighlighted ? colors.primaryLight : colors.surface,
       }}
-      onMouseEnter={() => onHover?.(true)}
-      onMouseLeave={() => onHover?.(false)}
     >
       {activityImage && (
         <div className="w-full h-40 overflow-hidden rounded-t-lg">
@@ -227,7 +230,7 @@ export default function ActivityCard({
               }}
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               style={{
                 borderColor: colors.border,
                 color: colors.primary,
@@ -244,12 +247,12 @@ export default function ActivityCard({
               e.stopPropagation();
               handleAddToPool();
             }}
-            disabled={isAdding || isAdded}
-            className={isNewType && onClick ? 'flex-1' : 'w-full'}
-            variant={isAdded ? "primary" : "secondary"}
+            disabled={isAdding || isSaved}
+            className={`${isNewType && onClick ? 'flex-1' : 'w-full'} cursor-pointer`}
+            variant={isSaved ? "primary" : "secondary"}
             size="sm"
           >
-            {isAdded ? (
+            {isSaved ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
                 Saved

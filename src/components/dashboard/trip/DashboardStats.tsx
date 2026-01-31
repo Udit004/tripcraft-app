@@ -23,62 +23,58 @@ const DashboardStats = React.memo(({ trips }: DashboardStatsProps) => {
 
   return (
     <div
-      className="mb-8 p-6 rounded-xl border transition-all duration-300"
-      style={{ 
-        backgroundColor: colors.surface,
-        borderColor: colors.border
-      }}
+      className="mb-8 p-6 rounded-xl transition-all duration-300"
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Total Trips */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 bg-white/10 p-4 rounded-md">
           <div
             className="w-12 h-12 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${colors.primary}15` }}
+            style={{ backgroundColor: `${colors.background}` }}
           >
-            <Calendar className="w-6 h-6" style={{ color: colors.primary }} />
+            <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
+            <p className="text-sm font-medium text-gray-200">
               Total Trips
             </p>
-            <p className="text-3xl font-bold" style={{ color: colors.primary }}>
+            <p className="text-3xl font-bold text-gray-100">
               {stats.totalTrips}
             </p>
           </div>
         </div>
 
         {/* Destinations */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 bg-white/10 p-4 rounded-md">
           <div
             className="w-12 h-12 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${colors.secondary}15` }}
+            style={{ backgroundColor: `${colors.background}` }}
           >
-            <MapPin className="w-6 h-6" style={{ color: colors.secondary }} />
+            <MapPin className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
+            <p className="text-sm font-medium text-gray-200">
               Destinations
             </p>
-            <p className="text-3xl font-bold" style={{ color: colors.secondary }}>
+            <p className="text-3xl font-bold text-gray-100">
               {stats.uniqueDestinations}
             </p>
           </div>
         </div>
 
         {/* Upcoming */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 bg-white/10 p-4 rounded-md">
           <div
             className="w-12 h-12 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${colors.accent}15` }}
+            style={{ backgroundColor: `${colors.background}` }}
           >
-            <TrendingUp className="w-6 h-6" style={{ color: colors.accent }} />
+            <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
+            <p className="text-sm font-medium text-gray-200" >
               Upcoming
             </p>
-            <p className="text-3xl font-bold" style={{ color: colors.accent }}>
+            <p className="text-3xl font-bold text-gray-100">
               {stats.upcomingTrips}
             </p>
           </div>

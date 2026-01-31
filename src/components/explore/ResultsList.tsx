@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { ExploreActivity } from '@/types/explore';
 import { colors } from '@/constants/colors';
 import { ArrowUpDown, Loader2 } from 'lucide-react';
@@ -31,16 +32,8 @@ export function ResultsList({
   className = '',
 }: ResultsListProps) {
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
-  const listRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
   const activityRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-  // Scroll to activity when marker is clicked
-  useEffect(() => {
-    if (scrollToActivityId && activityRefs.current.has(scrollToActivityId)) {
-      const element = activityRefs.current.get(scrollToActivityId);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [scrollToActivityId]);
 
   // Sort activities
   const sortedActivities = [...activities].sort((a, b) => {
@@ -54,6 +47,30 @@ export function ResultsList({
         return 0;
     }
   });
+
+  // Virtual scrolling for performance
+  const virtualizer = useVirtualizer({
+    count: sortedActivities.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 350, // Estimated card height with spacing
+    overscan: 5, // Render 5 items above/below viewport
+    measureElement: (el) => el?.getBoundingClientRect().height ?? 350, // Measure actual height
+  });
+
+  // Scroll to activity when marker is clicked (only once per selection)
+  const lastScrolledId = useRef<string | null>(null);
+  
+  useEffect(() => {
+    if (scrollToActivityId && scrollToActivityId !== lastScrolledId.current) {
+      const index = sortedActivities.findIndex(a => a.id === scrollToActivityId);
+      if (index !== -1) {
+        virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' });
+        lastScrolledId.current = scrollToActivityId;
+      }
+    } else if (!scrollToActivityId) {
+      lastScrolledId.current = null;
+    }
+  }, [scrollToActivityId, sortedActivities, virtualizer]);
 
   const handleSortChange = (option: SortOption) => {
     setSortBy(option);
@@ -110,33 +127,55 @@ export function ResultsList({
         </div>
       </div>
 
-      {/* Activity cards */}
+      {/* Activity cards with virtual scrolling */}
       <div
-        ref={listRef}
-        className="space-y-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
-        style={{ maxHeight: 'calc(100vh - 300px)' }}
+        ref={parentRef}
+        className="overflow-y-auto  gap-16 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
+        style={{ maxHeight: 'calc(100vh - 200px)' }}
       >
-        {sortedActivities.map((activity) => (
-          <div
-            key={activity.id}
-            ref={(el) => {
-              if (el) {
-                activityRefs.current.set(activity.id, el);
-              } else {
-                activityRefs.current.delete(activity.id);
-              }
-            }}
-            className="transition-all duration-200"
-          >
-            <ActivityCard
-              activity={activity}
-              onClick={() => onActivityClick(activity.id)}
-              onSave={() => onSaveActivity(activity.id)}
-              onHover={(isHovering) => onActivityHover(isHovering ? activity.id : null)}
-              isHighlighted={scrollToActivityId === activity.id}
-            />
-          </div>
-        ))}
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+          className='gap-8 space-y-8 mb-8 '
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const activity = sortedActivities[virtualRow.index];
+            return (
+              <div
+                key={activity.id}
+                data-index={virtualRow.index}
+                ref={(el) => {
+                  if (el) {
+                    activityRefs.current.set(activity.id, el);
+                    virtualizer.measureElement(el);
+                  } else {
+                    activityRefs.current.delete(activity.id);
+                  }
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`,
+                  paddingBottom: '24px',
+                }}
+              >
+                <ActivityCard
+                  activity={activity}
+                  onClick={() => onActivityClick(activity.id)}
+                  onSave={async () => await onSaveActivity(activity.id)}
+                  onHover={(isHovering) => onActivityHover(isHovering ? activity.id : null)}
+                  isHighlighted={scrollToActivityId === activity.id}
+                  isSaved={activity.saved}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

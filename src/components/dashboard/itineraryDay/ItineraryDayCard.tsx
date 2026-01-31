@@ -6,6 +6,7 @@ import { Calendar, MapPin, Clock, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import SwipeableItem from '../SwipeableItem'
 import { useDrag } from '@/context/DragContext'
+import { useActivityPoolContext } from '@/context/ActivityPoolContext'
 import  { moveActivityToDay }  from '@/services/activityPoolService'
 import { toast } from 'sonner'
 
@@ -38,6 +39,7 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
   const hasActivities = day.activitiesId && day.activitiesId.length > 0
   
   const { draggedActivity, dragSource, setDragOverDayId, clearDragState } = useDrag()
+  const { decrementPoolCount } = useActivityPoolContext()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
 
@@ -95,6 +97,8 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
 
       if (success) {
         toast.success(`Added "${draggedActivity.title}" to Day ${day.dayNumber}`)
+        // Update navbar pool count
+        decrementPoolCount()
         onActivityAdded?.()
       } else {
         toast.error('Failed to add activity to day')
@@ -112,7 +116,7 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({
     <div className="relative">
       {/* Timeline connector */}
       {index > 0 && (
-        <div className="absolute left-6 -top-6 w-0.5 h-6 bg-[#E5E7EB] z-0" />
+        <div className="absolute left-6 -top-6 w-0.5 h-6 z-0" />
       )}
 
       <SwipeableItem onEdit={onEdit} onDelete={onDelete}>

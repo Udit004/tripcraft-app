@@ -8,6 +8,7 @@ import { ActivityFilters } from './ActivityFilters';
 import { MapView } from './MapView';
 import { ResultsList } from './ResultsList';
 import { useExploreState } from './hooks/useExploreState';
+import { GradientButton } from '@/components/ui/GradientButton';
 
 /**
  * Main Explore page client component
@@ -23,6 +24,10 @@ export default function ExploreClient() {
     handleFiltersChange,
     activities,
     isLoadingActivities,
+    pagination,
+    handleLoadMore,
+    handlePageChange,
+    currentPage,
     viewport,
     setViewport,
     handleMapClick,
@@ -31,6 +36,7 @@ export default function ExploreClient() {
     handleActivityClick,
     handleActivityHover,
     handleSaveActivity,
+    error,
   } = useExploreState();
 
   const showMap = mode === 'map' || mode === 'combined';
@@ -97,6 +103,7 @@ export default function ExploreClient() {
             isLoading={isLoadingActivities}
             placeholder="Search city, place, or landmark..."
             sticky={false}
+            initialQuery={searchQuery}
           />
 
         </div>
@@ -141,6 +148,29 @@ export default function ExploreClient() {
                   onSaveActivity={handleSaveActivity}
                   scrollToActivityId={selectedActivityId || undefined}
                 />
+                
+                {/* Pagination Controls */}
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="mt-4 flex flex-col items-center gap-2">
+                    {/* Page info */}
+                    <p className="text-xs" style={{ color: colors.textMuted }}>
+                      Showing {activities.length} of {pagination.totalItems} results
+                      {' • '}
+                      Page {pagination.currentPage} of {pagination.totalPages}
+                    </p>
+                    
+                    {/* Load More Button */}
+                    {pagination.hasNextPage && (
+                      <GradientButton
+                        onClick={handleLoadMore}
+                        disabled={isLoadingActivities}
+                        className="px-6 py-2 cursor-pointer"
+                      >
+                        {isLoadingActivities ? 'Loading...' : 'Load More Results'}
+                      </GradientButton>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ) : mode === 'map' ? (
@@ -158,20 +188,58 @@ export default function ExploreClient() {
             </div>
           ) : (
             // Search-only mode
-            <ResultsList
-              activities={activities}
-              isLoading={isLoadingActivities}
-              onActivityHover={handleActivityHover}
-              onActivityClick={handleActivityClick}
-              onSaveActivity={handleSaveActivity}
-              scrollToActivityId={selectedActivityId || undefined}
-            />
+            <>
+              <ResultsList
+                activities={activities}
+                isLoading={isLoadingActivities}
+                onActivityHover={handleActivityHover}
+                onActivityClick={handleActivityClick}
+                onSaveActivity={handleSaveActivity}
+                scrollToActivityId={selectedActivityId || undefined}
+              />
+              
+              {/* Pagination Controls */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  {/* Page info */}
+                  <p className="text-xs" style={{ color: colors.textMuted }}>
+                    Showing {activities.length} of {pagination.totalItems} results
+                    {' • '}
+                    Page {pagination.currentPage} of {pagination.totalPages}
+                  </p>
+                  
+                  {/* Load More Button */}
+                  {pagination.hasNextPage && (
+                    <GradientButton
+                      onClick={handleLoadMore}
+                      disabled={isLoadingActivities}
+                      className="px-6 py-2 cursor-pointer"
+                    >
+                      {isLoadingActivities ? 'Loading...' : 'Load More Results'}
+                    </GradientButton>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
 
+      {/* Error state */}
+      {error && (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-2xl font-semibold mb-2" style={{ color: colors.textMain }}>
+            Something went wrong
+          </h3>
+          <p style={{ color: colors.textMuted }}>
+            {error}
+          </p>
+        </div>
+      )}
+
       {/* Empty state */}
-      {!isLoadingActivities && activities.length === 0 && searchQuery && (
+      {!isLoadingActivities && !error && activities.length === 0 && searchQuery && (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">🗺️</div>
           <h3 className="text-2xl font-semibold mb-2" style={{ color: colors.textMain }}>

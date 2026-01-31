@@ -10,18 +10,26 @@ interface SearchBarProps {
   isLoading: boolean;
   placeholder?: string;
   sticky?: boolean;
+  initialQuery?: string;
 }
 
 /**
  * Enhanced search bar with autocomplete suggestions
  */
-export function SearchBar({ onSearch, isLoading, placeholder, sticky = false }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+export function SearchBar({ onSearch, isLoading, placeholder, sticky = false, initialQuery = '' }: SearchBarProps) {
+  const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Sync with external query changes (e.g., from URL on mount)
+  useEffect(() => {
+    if (initialQuery && initialQuery !== query) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery]);
 
   // Fetch autocomplete suggestions
   useEffect(() => {

@@ -34,6 +34,8 @@ export function MapView({
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<Map<string, maplibregl.Marker>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const isInternalMove = useRef(false);
 
   // Initialize map
   useEffect(() => {
@@ -71,9 +73,9 @@ export function MapView({
         }
       });
 
-      // Update viewport on map move
+      // Update viewport on map move (only if user moved the map, not programmatic)
       map.current.on('moveend', () => {
-        if (map.current) {
+        if (map.current && !isInternalMove.current) {
           const center = map.current.getCenter();
           const zoom = map.current.getZoom();
           onViewportChange({
@@ -82,10 +84,12 @@ export function MapView({
             zoom,
           });
         }
+        isInternalMove.current = false;
       });
 
       map.current.on('load', () => {
         setIsLoading(false);
+        setMapLoaded(true);
       });
 
     } catch (error) {
@@ -101,14 +105,15 @@ export function MapView({
 
   // Update map center when viewport changes externally
   useEffect(() => {
-    if (map.current) {
+    if (map.current && mapLoaded) {
+      isInternalMove.current = true;
       map.current.flyTo({
         center: [viewport.longitude, viewport.latitude],
         zoom: viewport.zoom,
         duration: 1000,
       });
     }
-  }, [viewport.latitude, viewport.longitude, viewport.zoom]);
+  }, [viewport.latitude, viewport.longitude, viewport.zoom, mapLoaded]);
 
   // Update markers when activities change
   useEffect(() => {
