@@ -441,7 +441,7 @@ function normalizeActivities(
     }
 
     const category = mapToCategory(place);
-    const primaryTag = place.tags.tourism || place.tags.historic || place.tags.leisure || place.tags.natural || 'attraction';
+    const primaryTag = place.tags?.tourism || place.tags?.historic || place.tags?.leisure || place.tags?.natural || 'attraction';
     
     const activity: NormalizedActivity = {
       id: `osm-${place.id}`,
