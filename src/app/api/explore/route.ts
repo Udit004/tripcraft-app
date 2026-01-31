@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { VALID_ACTIVITY_TYPES } from '@/types/explore';
 
-// No API key needed for OpenStreetMap!
-const REQUEST_TIMEOUT = 10000; // 10 seconds
+// Configuration constants
+const REQUEST_TIMEOUT = 25000; // 25 seconds - Overpass API can be slow
+const OSM_TIMEOUT = 30000; // 30 seconds for OSM Overpass queries specifically
+const ITEMS_PER_PAGE = 12; // Number of items per page
+const DEFAULT_FILTERS = ['attraction', 'monument']; // Default filters for first load
+const MAX_RESULTS = 50; // Reduced from 100 for faster queries
 
 // Multiple Overpass API instances for fallback (in case one is down/busy)
 const OVERPASS_API_URLS = [
@@ -65,17 +70,31 @@ interface GeoNameResult {
 }
 
 interface NormalizedActivity {
-  title: string;
-  category: string;
-  location: string;
+  id: string;
+  name: string;
+  type: string;
   description: string;
+  location: { lat: number; lng: number };
+  address?: string;
+  category: string;
   confidence: 'high' | 'medium' | 'low';
+}
+
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 interface ExploreResponse {
   destination: string;
   destinationInfo: string;
   activities: NormalizedActivity[];
+  pagination: PaginationInfo;
+  appliedFilters: string[];
 }
 
 /**
@@ -114,7 +133,8 @@ async function getDestinationCoordinates(destination: string): Promise<GeoNameRe
     // Use Nominatim (OpenStreetMap's free geocoding service)
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destination)}&format=json&limit=1`;
     
-    const response = await fetchWithTimeout(url, 5000);
+    // Use standard timeout for geocoding
+    const response = await fetchWithTimeout(url, REQUEST_TIMEOUT);
 
     console.log(`[DEBUG] Geocoding "${destination}":`, {
       url,
@@ -152,24 +172,33 @@ async function getDestinationCoordinates(destination: string): Promise<GeoNameRe
 /**
  * Fetch nearby attractions using OpenStreetMap Overpass API (100% FREE, no API key!)
  * Uses multiple API instances for reliability
+ * Enhanced with category filtering
  */
-async function fetchNearbyAttractions(lat: number, lon: number): Promise<OSMPlace[]> {
-  const radius = 5000; // 5km radius (increased from 3km to expand search area)
+async function fetchNearbyAttractions(
+  lat: number,
+  lon: number,
+  filters: string[] = DEFAULT_FILTERS
+): Promise<OSMPlace[]> {
+  const radius = 5000; // 5km radius
   
-  // Simplified Overpass QL query for better performance
+  // Build query based on filters - map our filter names to OSM tags
+  const osmTagQueries = buildOSMQueryFromFilters(filters, lat, lon, radius);
+  
+  // Optimized Overpass QL query with increased timeout
   const query = `
-    [out:json][timeout:15];
+    [out:json][timeout:25];
     (
-      node["tourism"](around:${radius},${lat},${lon});
-      node["historic"](around:${radius},${lat},${lon});
+      ${osmTagQueries}
     );
-    out body 30;
+    out body ${MAX_RESULTS};
   `;
   
   console.log(`[DEBUG] Fetching attractions from OpenStreetMap:`, {
     lat,
     lon,
     radius,
+    filters,
+    queryLength: query.length,
   });
 
   // Try each API instance until one succeeds
@@ -179,7 +208,8 @@ async function fetchNearbyAttractions(lat: number, lon: number): Promise<OSMPlac
     try {
       console.log(`[DEBUG] Trying Overpass API instance ${i + 1}/${OVERPASS_API_URLS.length}: ${apiUrl}`);
       
-      const response = await fetchWithTimeout(apiUrl, 12000, {
+      // Use longer timeout for OSM queries
+      const response = await fetchWithTimeout(apiUrl, OSM_TIMEOUT, {
         method: 'POST',
         body: query,
       });
@@ -211,24 +241,134 @@ async function fetchNearbyAttractions(lat: number, lon: number): Promise<OSMPlac
       });
 
       if (responseData.elements && Array.isArray(responseData.elements)) {
-        console.log('[DEBUG] Sample places:', responseData.elements.slice(0, 2));
+        console.log('[DEBUG] Successfully fetched from OSM. Sample places:', responseData.elements.slice(0, 2));
         return responseData.elements;
       }
 
+      console.warn('[DEBUG] No elements in OSM response');
       return [];
     } catch (error) {
-      console.error(`[DEBUG] Error with Overpass instance ${i + 1}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorName = error instanceof Error ? error.name : 'Error';
+      
+      console.error(`[DEBUG] Error with Overpass instance ${i + 1} (${errorName}):`, errorMessage);
       
       // If this isn't the last instance, try the next one
       if (i < OVERPASS_API_URLS.length - 1) {
         console.log(`[DEBUG] Trying next Overpass API instance...`);
         continue;
       }
+      
+      console.error('[DEBUG] All Overpass API instances failed');
       return [];
     }
   }
 
+  console.warn('[DEBUG] Exhausted all Overpass API instances without success');
   return [];
+}
+
+/**
+ * Build OSM Overpass query from our filter types
+ * Optimized to reduce query complexity and improve performance
+ */
+function buildOSMQueryFromFilters(filters: string[], lat: number, lon: number, radius: number): string {
+  const queries: string[] = [];
+  
+  // If no filters specified, use default
+  const activeFilters = filters.length > 0 ? filters : DEFAULT_FILTERS;
+  
+  // Track which query types we've already added to avoid duplicates
+  const addedQueries = new Set<string>();
+  
+  activeFilters.forEach(filter => {
+    switch (filter.toLowerCase()) {
+      case 'attraction':
+      case 'sightseeing':
+        if (!addedQueries.has('attraction')) {
+          queries.push(`node["tourism"="attraction"](around:${radius},${lat},${lon});`);
+          addedQueries.add('attraction');
+        }
+        break;
+      case 'monument':
+      case 'historical':
+        if (!addedQueries.has('historic')) {
+          queries.push(`node["historic"](around:${radius},${lat},${lon});`);
+          addedQueries.add('historic');
+        }
+        break;
+      case 'museum':
+        if (!addedQueries.has('museum')) {
+          queries.push(`node["tourism"="museum"](around:${radius},${lat},${lon});`);
+          addedQueries.add('museum');
+        }
+        break;
+      case 'park':
+      case 'nature':
+        if (!addedQueries.has('park')) {
+          queries.push(`node["leisure"="park"](around:${radius},${lat},${lon});`);
+          addedQueries.add('park');
+        }
+        if (!addedQueries.has('natural')) {
+          queries.push(`node["natural"](around:${radius},${lat},${lon});`);
+          addedQueries.add('natural');
+        }
+        break;
+      case 'culture':
+        if (!addedQueries.has('gallery')) {
+          queries.push(`node["tourism"="gallery"](around:${radius},${lat},${lon});`);
+          addedQueries.add('gallery');
+        }
+        if (!addedQueries.has('theatre')) {
+          queries.push(`node["amenity"="theatre"](around:${radius},${lat},${lon});`);
+          addedQueries.add('theatre');
+        }
+        break;
+      case 'religious':
+        if (!addedQueries.has('worship')) {
+          queries.push(`node["amenity"="place_of_worship"](around:${radius},${lat},${lon});`);
+          addedQueries.add('worship');
+        }
+        break;
+      case 'restaurant':
+        if (!addedQueries.has('restaurant')) {
+          queries.push(`node["amenity"="restaurant"](around:${radius},${lat},${lon});`);
+          addedQueries.add('restaurant');
+        }
+        break;
+      case 'hotel':
+        if (!addedQueries.has('hotel')) {
+          queries.push(`node["tourism"="hotel"](around:${radius},${lat},${lon});`);
+          addedQueries.add('hotel');
+        }
+        break;
+      case 'shopping':
+        if (!addedQueries.has('shop')) {
+          queries.push(`node["shop"](around:${radius},${lat},${lon});`);
+          addedQueries.add('shop');
+        }
+        break;
+      case 'entertainment':
+        if (!addedQueries.has('theme_park')) {
+          queries.push(`node["tourism"="theme_park"](around:${radius},${lat},${lon});`);
+          addedQueries.add('theme_park');
+        }
+        break;
+    }
+  });
+  
+  // If no valid filters matched, use default tourism query
+  if (queries.length === 0) {
+    queries.push(`node["tourism"](around:${radius},${lat},${lon});`);
+    queries.push(`node["historic"](around:${radius},${lat},${lon});`);
+  }
+  
+  // Limit to max 5 queries to avoid timeout - prioritize first ones
+  const limitedQueries = queries.slice(0, 5);
+  
+  console.log(`[DEBUG] Built ${limitedQueries.length} OSM queries (from ${activeFilters.length} filters)`);
+  
+  return limitedQueries.join('\n');
 }
 
 /**
@@ -279,6 +419,7 @@ function getConfidenceLevel(place: OSMPlace): 'high' | 'medium' | 'low' {
 
 /**
  * Normalize OSM response to planner-friendly structure
+ * Enhanced with data quality filtering
  */
 function normalizeActivities(
   places: OSMPlace[],
@@ -287,8 +428,15 @@ function normalizeActivities(
   const normalized: NormalizedActivity[] = [];
 
   for (const place of places) {
-    // Ignore places with empty names
-    if (!place.tags?.name || place.tags.name.trim().length === 0) {
+    const placeName = place.tags?.name?.trim() || '';
+    
+    // Filter out noise data:
+    // 1. No name at all
+    // 2. Name is "unknown", "unnamed", or similar
+    // 3. Name is too short (likely invalid)
+    if (!placeName || 
+        placeName.length < 2 ||
+        /unknown|unnamed|untitled|no name|n\/a/i.test(placeName)) {
       continue;
     }
 
@@ -296,32 +444,50 @@ function normalizeActivities(
     const primaryTag = place.tags.tourism || place.tags.historic || place.tags.leisure || place.tags.natural || 'attraction';
     
     const activity: NormalizedActivity = {
-      title: place.tags.name,
+      id: `osm-${place.id}`,
+      name: placeName,
       category,
-      location: destination,
-      description: `${place.tags.name} - ${primaryTag.replace(/_/g, ' ')}`,
+      location: {
+        lat: place.lat,
+        lng: place.lon,
+      },
+      address: destination,
+      description: `${placeName} - ${primaryTag.replace(/_/g, ' ')}`,
       confidence: getConfidenceLevel(place),
+      type: primaryTag,
     };
 
     normalized.push(activity);
-
-    // Limit to max 15 results
-    if (normalized.length >= 15) {
-      break;
-    }
   }
 
   return normalized;
 }
 
 /**
- * Main API handler
+ * Main API handler with pagination and filtering support
  */
 export async function GET(request: NextRequest) {
   try {
-    // Extract destination from query parameters
+    // Extract parameters from query
     const { searchParams } = new URL(request.url);
     const destination = searchParams.get('destination');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || String(ITEMS_PER_PAGE));
+    const filtersParam = searchParams.get('filters');
+    
+    // Parse and validate filters
+    let filters: string[] = DEFAULT_FILTERS;
+    if (filtersParam) {
+      const requestedFilters = filtersParam.split(',').map(f => f.trim().toLowerCase());
+      // Validate against allowed types
+      filters = requestedFilters.filter(f => 
+        VALID_ACTIVITY_TYPES.includes(f as any)
+      );
+      // If no valid filters, use defaults
+      if (filters.length === 0) {
+        filters = DEFAULT_FILTERS;
+      }
+    }
 
     if (!destination || destination.trim().length === 0) {
       return NextResponse.json(
@@ -330,50 +496,101 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('[DEBUG] Explore request:', {
+      destination,
+      page,
+      limit,
+      filters,
+    });
+
     // Step 1: Get coordinates for the destination using Nominatim
     const coordinates = await getDestinationCoordinates(destination);
     
     if (!coordinates) {
-      // Return empty array if geocoding fails (graceful degradation)
+      // Return empty response if geocoding fails (graceful degradation)
       return NextResponse.json<ExploreResponse>(
         {
           destination,
           destinationInfo: `Explore ${destination}`,
           activities: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: limit,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+          appliedFilters: filters,
         },
         { status: 200 }
       );
     }
 
-    // Step 2: Fetch nearby attractions from OpenStreetMap (100% free!)
-    const places = await fetchNearbyAttractions(coordinates.lat, coordinates.lon);
+    // Step 2: Fetch nearby attractions from OpenStreetMap with filters
+    const places = await fetchNearbyAttractions(coordinates.lat, coordinates.lon, filters);
 
-    // Step 3: Normalize the response
-    const activities = normalizeActivities(places, destination);
+    // Step 3: Normalize and clean the data
+    const allActivities = normalizeActivities(places, destination);
+
+    // Step 4: Implement pagination
+    const totalItems = allActivities.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedActivities = allActivities.slice(startIndex, endIndex);
+
+    console.log('[DEBUG] Pagination:', {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      itemsPerPage: limit,
+      startIndex,
+      endIndex,
+      returnedItems: paginatedActivities.length,
+    });
 
     // Generate destination description
     const destinationInfo = coordinates.name 
-      ? `Discover the best attractions in ${coordinates.name}. Find museums, parks, monuments, and cultural landmarks.`
-      : `Explore ${destination} and discover amazing places to visit.`;
+      ? `Discover ${totalItems} attractions in ${coordinates.name}. Find museums, parks, monuments, and cultural landmarks.`
+      : `Explore ${destination} and discover ${totalItems} amazing places to visit.`;
 
-    // Step 4: Return clean data to frontend
+    // Step 5: Return paginated data with metadata
     return NextResponse.json<ExploreResponse>(
       {
         destination,
         destinationInfo,
-        activities,
+        activities: paginatedActivities,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems,
+          itemsPerPage: limit,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+        appliedFilters: filters,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Unexpected error in explore API:', error);
     
-    // Return empty array on error (do not throw hard error)
+    // Return empty response on error (graceful degradation)
     return NextResponse.json<ExploreResponse>(
       {
         destination: '',
         destinationInfo: '',
         activities: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: ITEMS_PER_PAGE,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        appliedFilters: DEFAULT_FILTERS,
       },
       { status: 200 }
     );
