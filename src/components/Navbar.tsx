@@ -16,6 +16,7 @@ export default function Navbar() {
   const { poolCount } = useActivityPoolContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -134,9 +135,10 @@ export default function Navbar() {
           {/* Auth Buttons - Desktop */}
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
-              <>
-                <div 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border hover:shadow-sm transition-all"
                   style={{ 
                     backgroundColor: colors.surface,
                     borderColor: colors.border
@@ -148,19 +150,67 @@ export default function Navbar() {
                   <span className="text-sm font-medium" style={{ color: colors.textMain }}>
                     {user?.username}
                   </span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="px-5 py-2 rounded-lg border transition-all font-medium text-sm hover:shadow-sm"
-                  style={{ 
-                    color: colors.primary,
-                    borderColor: colors.border,
-                    backgroundColor: colors.surface
-                  }}
-                >
-                  Sign Out
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                    style={{ color: colors.textMuted }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-              </>
+
+                {/* Dropdown Menu */}
+                {dropdownOpen && (
+                  <>
+                    {/* Backdrop to close dropdown */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setDropdownOpen(false)}
+                    />
+                    <div 
+                      className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-20 overflow-hidden animate-in slide-in-from-top-2 duration-200"
+                      style={{ 
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border
+                      }}
+                    >
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-opacity-80 transition-colors"
+                        style={{ 
+                          color: colors.textMain,
+                          backgroundColor: isActive('/profile') ? colors.background : 'transparent'
+                        }}
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-sm font-medium">Profile</span>
+                      </Link>
+                      <div style={{ borderTop: `1px solid ${colors.border}` }}></div>
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left hover:bg-red-50"
+                        style={{ 
+                          color: '#DC2626',
+                          backgroundColor: 'transparent'
+                        }}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span className="text-sm font-medium">Sign Out</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <>
                 <Link
@@ -273,16 +323,36 @@ export default function Navbar() {
                       </span>
                     </div>
                   </div>
+                  <Link
+                    href="/profile"
+                    className={`font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-3 ${
+                      isActive('/profile') ? 'shadow-sm' : ''
+                    }`}
+                    style={{
+                      color: isActive('/profile') ? colors.primary : colors.textMuted,
+                      backgroundColor: isActive('/profile') ? colors.background : 'transparent',
+                      fontWeight: isActive('/profile') ? '600' : '500',
+                    }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Profile</span>
+                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="text-left font-medium py-3 px-4 rounded-lg transition-all border"
+                    className="text-left font-medium py-3 px-4 rounded-lg transition-all border flex items-center gap-3 hover:bg-red-50"
                     style={{ 
-                      color: colors.primary,
-                      borderColor: colors.border,
+                      color: '#DC2626',
+                      borderColor: '#FCA5A5',
                       backgroundColor: colors.surface
                     }}
                   >
-                    Sign Out
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Sign Out</span>
                   </button>
                 </>
               ) : (
